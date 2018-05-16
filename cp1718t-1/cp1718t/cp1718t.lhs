@@ -974,14 +974,15 @@ outras funções auxiliares que sejam necessárias.
 \subsection*{Problema 1}
 
 \begin{code}
-inBlockchain = undefined
-outBlockchain = undefined
-recBlockchain = undefined    
-cataBlockchain = undefined     
-anaBlockchain = undefined
-hyloBlockchain = undefined
+inBlockchain = either Bc Bcs
+outBlockchain (Bc a) = i1 (a)
+outBlockchain (Bcs b) = i2 (b)
+recBlockchain f = id -|- id >< f   
+cataBlockchain g   = g . recBlockchain (cataBlockchain g) . outBlockchain    
+anaBlockchain  g   = inBlockchain . recBlockchain (anaBlockchain g) . g
+hyloBlockchain h g = cataBlockchain h . anaBlockchain g
 
-allTransactions = undefined
+allTransactions =  cataBlockchain (either (p2.p2) (uncurry(++).((p2.p2)><id)))
 ledger = undefined
 isValidMagicNr = undefined
 \end{code}
