@@ -982,8 +982,12 @@ cataBlockchain g   = g . recBlockchain (cataBlockchain g) . outBlockchain
 anaBlockchain  g   = inBlockchain . recBlockchain (anaBlockchain g) . g
 hyloBlockchain h g = cataBlockchain h . anaBlockchain g
 
-allTransactions =  cataBlockchain (either (p2.p2) (uncurry(++).((p2.p2)><id)))
-ledger = undefined
+allTransactions =  cataBlockchain (either (g) (uncurry(++).((g)><id)))
+    where g = p2.p2
+ledger = cataBlockchain (either (g) (uncurry(++).((g)><id)))
+    where g = concat.(map f).p2.p2
+          f = uncurry(++).w
+          w = split (singl.(id><p1)) (singl.(id><negate).swap.p2)
 isValidMagicNr = undefined
 \end{code}
 
