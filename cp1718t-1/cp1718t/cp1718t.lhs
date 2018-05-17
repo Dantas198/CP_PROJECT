@@ -1001,8 +1001,11 @@ pQ3 = p1.p2.p2
 pQ4 = p2.p2.p2
 q4x (x,y,z,t) = (x><(y><(z><t))) --para nao ter muitas confusoes com parenteses
 q4xu h = q4x (h,h,h,h)
+splitq4 (x,y,z,t)  = split x (split y (split z t)) 
+splitq4u h = splitq4 (h,h,h,h)
+cellBuild (a,(b,c)) = Cell a b c
 
-inQTree (Left (a,(b,c))) = Cell a b c
+inQTree (Left c) = cellBuild c
 inQTree (Right x) = Block (pQ1 x) (pQ2 x) (pQ3 x) (pQ4 x)
 outQTree (Cell a b c) = i1 (a,(b,c))
 outQTree (Block x y z t) = i2 (x,(y,(z,t)))
@@ -1015,7 +1018,7 @@ hyloQTree h g=  cataQTree h . anaQTree g
 instance Functor QTree where
     fmap f = cataQTree (inQTree . baseQTree f id)
 
-rotateQTree = undefined
+rotateQTree = cataQTree (either cellBuild (inQTree.i2.(splitq4(pQ3,pQ1,pQ4,pQ2))))
 scaleQTree = undefined
 invertQTree = undefined
 compressQTree = undefined
