@@ -995,16 +995,23 @@ isValidMagicNr = (uncurry (==)).(split (length.n) (length.nub.n))
 \subsection*{Problema 2}
 
 \begin{code}
-inQTree = undefined
-outQTree = undefined
-baseQTree = undefined
-recQTree = undefined
-cataQTree = undefined
-anaQTree = undefined
-hyloQTree = undefined
+pQ1 = p1
+pQ2 = p1.p2
+pQ3 = p1.p2.p2
+pQ4 = p2.p2.p2
+
+inQTree (Left (a,(b,c))) = Cell a b c
+inQTree (Right x) = Block (pQ1 x) (pQ2 x) (pQ3 x) (pQ4 x)
+outQTree (Cell a b c) = i1 (a,(b,c))
+outQTree (Block x y z t) = i2 (x,(y,(z,t)))
+baseQTree f h = (f><id)-|-(h><(h><(h><h)))
+recQTree f = baseQTree id f
+cataQTree g = g . recQTree (cataQTree g) . outQTree 
+anaQTree g = inQTree . recQTree (anaQTree g) . g
+hyloQTree h g=  cataQTree h . anaQTree g
 
 instance Functor QTree where
-    fmap = undefined
+    fmap f = cataQTree (inQTree . baseQTree f id)
 
 rotateQTree = undefined
 scaleQTree = undefined
