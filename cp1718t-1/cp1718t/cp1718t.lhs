@@ -999,12 +999,14 @@ pQ1 = p1
 pQ2 = p1.p2
 pQ3 = p1.p2.p2
 pQ4 = p2.p2.p2
+q4x (x,y,z,t) = (x><(y><(z><t))) --para nao ter muitas confusoes com parenteses
+q4xu h = q4x (h,h,h,h)
 
 inQTree (Left (a,(b,c))) = Cell a b c
 inQTree (Right x) = Block (pQ1 x) (pQ2 x) (pQ3 x) (pQ4 x)
 outQTree (Cell a b c) = i1 (a,(b,c))
 outQTree (Block x y z t) = i2 (x,(y,(z,t)))
-baseQTree f h = (f><id)-|-(h><(h><(h><h)))
+baseQTree f h = (f><id)-|-(q4xu h)
 recQTree f = baseQTree id f
 cataQTree g = g . recQTree (cataQTree g) . outQTree 
 anaQTree g = inQTree . recQTree (anaQTree g) . g
