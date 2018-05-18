@@ -986,7 +986,7 @@ allTransactions =  cataBlockchain (either (g) (conc.((g)><id)))
     where g = p2.p2
 ledger = cataBlockchain (either (g) (conc.((g)><id)))
     where g = concat.(map (conc.w)).p2.p2
-          w = split (singl.(id><negate.p1)) (singl.swap.p2)
+          w = split (singl.(id><p1)) (singl.(id><negate).swap.p2)
 isValidMagicNr = (uncurry (==)).(split (length.n) (length.nub.n))
     where n = cataBlockchain (either (singl.p1) (cons.(p1><id)))
 \end{code}
@@ -1035,15 +1035,17 @@ loop = undefined
 \subsection*{Problema 4}
 
 \begin{code}
-leafBuild (a,(b,(c,d))) = Comp a b c d
+leafBuild (a,(b,c)) = Comp a b c
 
-inFTree = either Unit leadbuild
-outFTree = undefined
-baseFTree = undefined
-recFTree = undefined
-cataFTree = undefined
-anaFTree = undefined
-hyloFTree = undefined
+inFTree (Left u) = Unit u
+inFTree (Right l) = leafBuild l
+outFTree (Unit u) = i1 u
+outFTree (Comp a b c) = i2 (a,(b,c))
+baseFTree f g h =  g -|- (f >< ( h >< h))
+recFTree f  = baseFTree id id f
+cataFTree g = g . recFTree (cataFTree g) . outFTree
+anaFTree g = inFTree . recFTree (anaFTree g) . g
+hyloFTree h g = cataFTree h . anaFTree g
 
 instance Bifunctor FTree where
     bimap = undefined
@@ -1057,10 +1059,7 @@ drawPTree = undefined
 \begin{code}
 singletonbag = undefined
 muB = undefined
-dist = undefinedUnit b
-Comp a
-(
-FTr
+dist = undefined
 \end{code}
 
 \section{Como exprimir cálculos e diagramas em LaTeX/lhs2tex}
