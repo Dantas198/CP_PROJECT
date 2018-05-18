@@ -986,7 +986,7 @@ allTransactions =  cataBlockchain (either (g) (conc.((g)><id)))
     where g = p2.p2
 ledger = cataBlockchain (either (g) (conc.((g)><id)))
     where g = concat.(map (conc.w)).p2.p2
-          w = split (singl.(id><negate.p1)) (singl.swap.p2)
+          w = split (singl.(id><p1)) (singl.(id><negate).swap.p2)
 isValidMagicNr = (uncurry (==)).(split (length.n) (length.nub.n))
     where n = cataBlockchain (either (singl.p1) (cons.(p1><id)))
 \end{code}
@@ -1046,13 +1046,17 @@ loop = undefined
 \subsection*{Problema 4}
 
 \begin{code}
-inFTree = undefined
-outFTree = undefined
-baseFTree = undefined
-recFTree = undefined
-cataFTree = undefined
-anaFTree = undefined
-hyloFTree = undefined
+leafBuild (a,(b,c)) = Comp a b c
+
+inFTree (Left u) = Unit u
+inFTree (Right l) = leafBuild l
+outFTree (Unit u) = i1 u
+outFTree (Comp a b c) = i2 (a,(b,c))
+baseFTree f g h =  g -|- (f >< ( h >< h))
+recFTree f  = baseFTree id id f
+cataFTree g = g . recFTree (cataFTree g) . outFTree
+anaFTree g = inFTree . recFTree (anaFTree g) . g
+hyloFTree h g = cataFTree h . anaFTree g
 
 instance Bifunctor FTree where
     bimap = undefined
