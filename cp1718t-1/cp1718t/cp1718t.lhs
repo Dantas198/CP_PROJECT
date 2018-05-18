@@ -1035,7 +1035,9 @@ loop = undefined
 \subsection*{Problema 4}
 
 \begin{code}
-inFTree = undefined
+leafBuild (a,(b,(c,d))) = Comp a b c d
+
+inFTree = either Unit leadbuild
 outFTree = undefined
 baseFTree = undefined
 recFTree = undefined
@@ -1055,7 +1057,10 @@ drawPTree = undefined
 \begin{code}
 singletonbag = undefined
 muB = undefined
-dist = undefined
+dist = undefinedUnit b
+Comp a
+(
+FTr
 \end{code}
 
 \section{Como exprimir cálculos e diagramas em LaTeX/lhs2tex}
