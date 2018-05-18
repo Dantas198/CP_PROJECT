@@ -1004,6 +1004,7 @@ q4xu h = q4x (h,h,h,h)
 splitq4 (x,y,z,t)  = split x (split y (split z t)) 
 splitq4u h = splitq4 (h,h,h,h)
 cellBuild (a,(b,c)) = Cell a b c
+q4toList ((x,(y,(z,d)))) = x:y:z:d:[] 
 
 inQTree (Left c) = cellBuild c
 inQTree (Right x) = Block (pQ1 x) (pQ2 x) (pQ3 x) (pQ4 x)
@@ -1019,10 +1020,19 @@ instance Functor QTree where
     fmap f = cataQTree (inQTree . baseQTree f id)
 
 rotateQTree = cataQTree (either cellBuild (inQTree.i2.(splitq4(pQ3,pQ1,pQ4,pQ2))))
-scaleQTree = undefined
+scaleQTree i x = cataQTree (either (cellBuild.(\(a,(b,c)) -> (a,(b*i,c*i)))) (inQTree.i2)) x
 invertQTree = fmap (f)
     where f (PixelRGBA8 r g b a) = PixelRGBA8 (255-r) (255-g) (255-b) (a)
-compressQTree = undefined
+
+compressAux :: QTree a -> QTree a
+compressAux (Block (Cell a b1 c1) (Cell _ b2 c2) (Cell _ b3 c3) (Cell _ b4 c4)) = (Cell a (b1+b2) (c1+c3))
+compressAux x = x  
+
+compressQTree i x = p2 (cataQTree (either (split (const 0) (cellBuild)) (v.f)) x)
+          where 
+                f = split ((+1).maximum.q4toList.q4xu(p1)) (inQTree.i2.q4xu(p2))
+                v x = if (p1 x) <= i then (id><compressAux) x else x
+           
 outlineQTree = undefined
 \end{code}
 
@@ -1311,7 +1321,7 @@ invertBMP from to = withBMP from to invertbm
 
 depthQTree :: QTree a -> Int
 depthQTree = cataQTree (either (const 0) f)
-    where f (a,(b,(c,d))) = maximum [a,b,c,d]
+    where f (a,(b,(c,d))) = maximum [a,b,c,d] + 1
 
 compressbm :: Eq a => Int -> Matrix a -> Matrix a
 compressbm n = qt2bm . compressQTree n . bm2qt
