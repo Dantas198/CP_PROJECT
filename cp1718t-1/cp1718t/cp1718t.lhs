@@ -1020,7 +1020,8 @@ instance Functor QTree where
 
 rotateQTree = cataQTree (either cellBuild (inQTree.i2.(splitq4(pQ3,pQ1,pQ4,pQ2))))
 scaleQTree = undefined
-invertQTree = undefined
+invertQTree = fmap (f)
+    where f (PixelRGBA8 r g b a) = PixelRGBA8 (255-r) (255-g) (255-b) (a)
 compressQTree = undefined
 outlineQTree = undefined
 \end{code}
