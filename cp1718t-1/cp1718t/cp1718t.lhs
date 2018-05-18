@@ -986,7 +986,7 @@ allTransactions =  cataBlockchain (either (g) (conc.((g)><id)))
     where g = p2.p2
 ledger = cataBlockchain (either (g) (conc.((g)><id)))
     where g = concat.(map (conc.w)).p2.p2
-          w = split (singl.(id><p1)) (singl.(id><negate).swap.p2)
+          w = split (singl.(id><negate.p1)) (singl.swap.p2)
 isValidMagicNr = (uncurry (==)).(split (length.n) (length.nub.n))
     where n = cataBlockchain (either (singl.p1) (cons.(p1><id)))
 \end{code}
