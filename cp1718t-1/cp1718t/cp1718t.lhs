@@ -1038,6 +1038,9 @@ loop = undefined
 \begin{code}
 leafBuild (a,(b,c)) = Comp a b c
 
+intToFloat :: Int -> Float
+intToFloat n = fromInteger (toInteger n)
+
 inFTree (Left u) = Unit u
 inFTree (Right l) = leafBuild l
 outFTree (Unit u) = i1 u
@@ -1051,7 +1054,8 @@ hyloFTree h g = cataFTree h . anaFTree g
 instance Bifunctor FTree where
     bimap = undefined
 
-generatePTree = undefined
+generatePTree = anaFTree (i1.intToFloat (i2.(split intToFloat intToFloat)))
+       where const = (sqrt 2) / 2 
 drawPTree = undefined
 \end{code}
 
