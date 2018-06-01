@@ -1035,9 +1035,9 @@ compressQTree i x = p2 (cataQTree (either (split (const 0) (cellBuild)) (v.f)) x
                 f = split ((+1).maximum.q4toList.q4xu(p1)) (inQTree.i2.q4xu(p2))
                 v x = if (p1 x) <= i then (id><compressAux) x else x
            
-outlineQTree f = qt2bm.(cataQTree (either (g.cellBuild) (inQTree.i2)))
-    where g (Cell x i j) = mat (x,(i,j))
-          mat (x,(i,j)) = bm2qt (matrix j i (\(a,b) -> if (a==1 || a == j || b == 1 || b == i) then (f x) else False))
+outlineQTree f = cataQTree (either (mat) (d))
+    where mat (x,(i,j)) = matrix j i (\(a,b) -> if (a==1 || a == j || b == 1 || b == i) then (f x) else False)
+          d (a,(b,(c,d))) = (a <|> b) <-> (c <|> d)
 \end{code}
 
 \subsection*{Problema 3}
