@@ -1050,13 +1050,13 @@ loop = undefined
 \subsection*{Problema 4}
 
 \begin{code}
-leafBuild (a,(b,c)) = Comp a b c
+branchBuild (a,(b,c)) = Comp a b c
 
 intToFloat :: Int -> Float
 intToFloat n = fromInteger (toInteger n)
 
 inFTree (Left u) = Unit u
-inFTree (Right l) = leafBuild l
+inFTree (Right l) = branchBuild l
 outFTree (Unit u) = i1 u
 outFTree (Comp a b c) = i2 (a,(b,c))
 baseFTree f g h =  g -|- (f >< ( h >< h))
@@ -1068,8 +1068,15 @@ hyloFTree h g = cataFTree h . anaFTree g
 instance Bifunctor FTree where
     bimap = undefined
 
-generatePTree = anaFTree (i1.intToFloat (i2.(split intToFloat intToFloat)))
-       where const = (sqrt 2) / 2 
+multCons :: Square->Square
+multCons x = ((sqrt 2) / 2)* x
+
+generateSquare :: (a1 -> Either b (a2, (a1, a1))) -> a1 -> FTree a2 b
+generateSquare 1 x  =  Unit (multCons x)
+--generateSquare n x = branchBuild (multCons x, (multCons x,multCons x))--((multCons x) >< ((generateSquare (n-1) (multCons x)) >< (generateSquare (n-1) (multCons x))))
+
+generatePTree n = undefined--anaFTree (generateSquare n  20)
+
 drawPTree = undefined
 \end{code}
 
