@@ -984,8 +984,10 @@ hyloBlockchain h g = cataBlockchain h . anaBlockchain g
 
 allTransactions =  cataBlockchain (either (g) (conc.((g)><id)))
     where g = p2.p2
-ledger = cataBlockchain (either (g) (conc.((g)><id)))
-    where g = concat.(map (conc.w)).p2.p2
+ledger = map d.groupBy(e).sort.cataBlockchain (either (g) (conc.((g)><id)))
+    where d (x) = ((p1.head) x,(sum ([p2(y) | y <- x])))
+          e x y = (p1 x) == (p1 y)
+          g = concat.(map (conc.w)).p2.p2
           w = split (singl.(id><p1)) (singl.(id><negate).swap.p2)
 isValidMagicNr = (uncurry (==)).(split (length.n) (length.nub.n))
     where n = cataBlockchain (either (singl.p1) (cons.(p1><id)))
@@ -1033,7 +1035,9 @@ compressQTree i x = p2 (cataQTree (either (split (const 0) (cellBuild)) (v.f)) x
                 f = split ((+1).maximum.q4toList.q4xu(p1)) (inQTree.i2.q4xu(p2))
                 v x = if (p1 x) <= i then (id><compressAux) x else x
            
-outlineQTree = undefined
+outlineQTree f = cataQTree (either (mat) (d))
+    where mat (x,(i,j)) = matrix j i (\(a,b) -> if (a==1 || a == j || b == 1 || b == i) then (f x) else False)
+          d (a,(b,(c,d))) = (a <|> b) <-> (c <|> d)
 \end{code}
 
 \subsection*{Problema 3}
