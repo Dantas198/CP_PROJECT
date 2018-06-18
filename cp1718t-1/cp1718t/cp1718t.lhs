@@ -1036,7 +1036,7 @@ compressQTree i x = p2 (cataQTree (either (split (const 0) (cellBuild)) (v.f)) x
                 v x = if (p1 x) <= i then (id><compressAux) x else x
            
 outlineQTree f = cataQTree (either (mat) (joinmats))
-    where mat (x,(i,j)) = matrix j i (\(a,b) -> if (a==1 || a == j || b == 1 || b == i) then (f x) else False)
+    where mat (x,(i,j)) = matrix j i (\(a,b) -> if ( (a==1 || a == j) || (b==1 || b==i)) then (f x) else False)
           joinmats (a,(b,(c,d))) = (a <|> b) <-> (c <|> d)
 \end{code}
 
