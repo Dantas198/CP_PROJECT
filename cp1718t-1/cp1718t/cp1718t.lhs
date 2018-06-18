@@ -1090,9 +1090,9 @@ drawPTree = undefined
 \subsection*{Problema 5}
 
 \begin{code}
-singletonbag = undefined
-muB = undefined
-dist = undefined
+singletonbag x = B [(x,1)]
+muB (B d)= B (concat ([concat (replicate a x) | ((B x),a) <- d]))
+dist (B x) = uniform (concat [replicate a d | (d,a) <- x])
 \end{code}
 
 \section{Como exprimir cálculos e diagramas em LaTeX/lhs2tex}
