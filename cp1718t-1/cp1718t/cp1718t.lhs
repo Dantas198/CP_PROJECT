@@ -1073,18 +1073,28 @@ multCons x = ((sqrt 2) / 2)* x
 
 
 generateSquare :: Int -> Either Square (Square, (Int, Int))
-generateSquare n | n == 1 = Left 10.0
-                 | otherwise = Right (10.0, ((n-1), (n-1)))  
+generateSquare n | n <= 0 = Left 1.0
+                 | otherwise = Right (mult (fromIntegral n), ((n-1), (n-1))) 
+          where mult n = (((sqrt 2) / 2)*n)* 1.0
 
 
-generatePTree n = anaFTree (generateSquare) (n)
+--generateSquare n = p2p(Left 1.0, Right (mult (fromIntegral n), ((n-1), (n-1)))) (n>0)
+           -- where mult n = (((sqrt 2) / 2)*n)* 1.0
+
+generatePTree = anaFTree (generateSquare)
 
 
-drawSquare :: ((Float, Float), Float) -> Picture
-drawSquare ((x,y),tam) = Polygon ((x-d, y-d): (x-d, y+d): (x+d, y+d): (x+d, y-d):[])
+drawSquareFixed :: (Float,(Float, Float)) -> [Picture]
+drawSquareFixed (tam,(x,y)) = [Polygon ((x-d, y-d): (x-d, y+d): (x+d, y+d): (x+d, y-d):[])]
   where d = tam/2
 
-drawPTree = undefined
+
+
+drawSquare :: Either Square (Square, ([Picture], [Picture])) -> [Picture]
+drawSquare (Left s) = drawSquareFixed (s,(0.0, 0.0))
+drawSquare (Right s) = drawSquareFixed (p1 s, (0.0, 0.0))
+
+drawPTree = cataFTree (drawSquare)
 \end{code}
 
 \subsection*{Problema 5}
