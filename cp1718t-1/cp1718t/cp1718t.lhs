@@ -1035,9 +1035,9 @@ compressQTree i x = p2 (cataQTree (either (split (const 0) (cellBuild)) (v.f)) x
                 f = split ((+1).maximum.q4toList.q4xu(p1)) (inQTree.i2.q4xu(p2))
                 v x = if (p1 x) <= i then (id><compressAux) x else x
            
-outlineQTree f = cataQTree (either (mat) (d))
-    where mat (x,(i,j)) = matrix j i (\(a,b) -> if (a==1 || a == j || b == 1 || b == i) then (f x) else False)
-          d (a,(b,(c,d))) = (a <|> b) <-> (c <|> d)
+outlineQTree f = cataQTree (either (mat) (joinmats))
+    where mat (x,(i,j)) = matrix j i (\(a,b) -> if ( (a==1 || a == j) || (b==1 || b==i)) then (f x) else False)
+          joinmats (a,(b,(c,d))) = (a <|> b) <-> (c <|> d)
 \end{code}
 
 \subsection*{Problema 3}
@@ -1100,9 +1100,9 @@ drawPTree = cataFTree (drawSquare)
 \subsection*{Problema 5}
 
 \begin{code}
-singletonbag = undefined
-muB = undefined
-dist = undefined
+singletonbag x = B [(x,1)]
+muB (B d)= B (concat ([concat (replicate a x) | ((B x),a) <- d]))
+dist (B x) = uniform (concat [replicate a d | (d,a) <- x])
 \end{code}
 
 \section{Como exprimir cálculos e diagramas em LaTeX/lhs2tex}
