@@ -1071,11 +1071,18 @@ instance Bifunctor FTree where
 multCons :: Square->Square
 multCons x = ((sqrt 2) / 2)* x
 
-generateSquare :: (a1 -> Either b (a2, (a1, a1))) -> a1 -> FTree a2 b
-generateSquare 1 x  =  Unit (multCons x)
---generateSquare n x = branchBuild (multCons x, (multCons x,multCons x))--((multCons x) >< ((generateSquare (n-1) (multCons x)) >< (generateSquare (n-1) (multCons x))))
 
-generatePTree n = undefined--anaFTree (generateSquare n  20)
+generateSquare :: Int -> Either Square (Square, (Int, Int))
+generateSquare n | n == 1 = Left 10.0
+                 | otherwise = Right (10.0, ((n-1), (n-1)))  
+
+
+generatePTree n = anaFTree (generateSquare) (n)
+
+
+drawSquare :: ((Float, Float), Float) -> Picture
+drawSquare ((x,y),tam) = Polygon ((x-d, y-d): (x-d, y+d): (x+d, y+d): (x+d, y-d):[])
+  where d = (/2).p2
 
 drawPTree = undefined
 \end{code}
