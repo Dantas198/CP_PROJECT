@@ -1082,7 +1082,7 @@ generatePTree n = anaFTree (generateSquare) (n)
 
 drawSquare :: ((Float, Float), Float) -> Picture
 drawSquare ((x,y),tam) = Polygon ((x-d, y-d): (x-d, y+d): (x+d, y+d): (x+d, y-d):[])
-  where d = (/2).p2
+  where d = tam/2
 
 drawPTree = undefined
 \end{code}
