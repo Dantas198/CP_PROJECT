@@ -1055,8 +1055,8 @@ branchBuild (a,(b,c)) = Comp a b c
 intToFloat :: Int -> Float
 intToFloat n = fromInteger (toInteger n)
 
-inFTree (Left u) = Unit u
-inFTree (Right l) = branchBuild l
+inFTree = either Unit (branchBuild) 
+--outFTree = undefined --(i1) -|- (i2 (uncurry.(id >< uncurry)))
 outFTree (Unit u) = i1 u
 outFTree (Comp a b c) = i2 (a,(b,c))
 baseFTree f g h =  g -|- (f >< ( h >< h))
@@ -1068,14 +1068,11 @@ hyloFTree h g = cataFTree h . anaFTree g
 instance Bifunctor FTree where
     bimap = undefined
 
-multCons :: Square->Square
-multCons x = ((sqrt 2) / 2)* x
-
 
 generateSquare :: Int -> Either Square (Square, (Int, Int))
 generateSquare n | n <= 0 = Left 1.0
                  | otherwise = Right (mult (fromIntegral n), ((n-1), (n-1))) 
-          where mult n = (((sqrt 2) / 2)*n)* 1.0
+          where mult n = ((2 / (sqrt 2))^n)* 1.0
 
 
 --generateSquare n = p2p(Left 1.0, Right (mult (fromIntegral n), ((n-1), (n-1)))) (n>0)
@@ -1084,17 +1081,21 @@ generateSquare n | n <= 0 = Left 1.0
 generatePTree = anaFTree (generateSquare)
 
 
-drawSquareFixed :: (Float,(Float, Float)) -> [Picture]
-drawSquareFixed (tam,(x,y)) = [Polygon ((x-d, y-d): (x-d, y+d): (x+d, y+d): (x+d, y-d):[])]
+type Fractal = ((Square,Bool) , Point)
+
+drawSquareFixed :: Fractal -> [Picture]
+drawSquareFixed ((tam,incl),(x,y)) = p2p (retNormal, retIncl) (incl)
   where d = tam/2
+        retNormal = [Polygon ((x-d, y-d): (x-d, y+d): (x+d, y+d): (x+d, y-d):[])]
+        retIncl = [Polygon ((x-d, y-d): (x-d, y+d): (x+d, y+d): (x+d, y-d):[])]
 
 
 
-drawSquare :: Either Square (Square, ([Picture], [Picture])) -> [Picture]
-drawSquare (Left s) = drawSquareFixed (s,(0.0, 0.0))
-drawSquare (Right s) = drawSquareFixed (p1 s, (0.0, 0.0))
+toFractal :: Either Square (Square, ([Fractal], [Fractal])) -> [Fractal]
+toFractal (Left s) = [((s, True), (0,0))]
+toFractal (Right s) =[((p1 s, True), (0,0))]
 
-drawPTree = cataFTree (drawSquare)
+drawPTree = undefined --cataFTree (toFractal)
 \end{code}
 
 \subsection*{Problema 5}
