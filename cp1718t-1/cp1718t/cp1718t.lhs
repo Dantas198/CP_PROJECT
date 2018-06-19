@@ -1202,13 +1202,8 @@ instance Bifunctor FTree where
 
 generateSquare :: Int -> Either Square (Square, (Int, Int))
 generateSquare n | n <= 0 = Left 1.0
-<<<<<<< HEAD
                  | otherwise = Right (mult (fromIntegral n), ((n-1), (n-1))) 
           where mult n = ((2 / (sqrt 2))^n)* 1.0
-=======
-                 | otherwise = Right (mult (fromIntegral n), ((n-1), (n-1)))
-          where mult n = (((sqrt 2) / 2)*n)* 1.0
->>>>>>> 822dcaa0eb7cacfa3f3723195b9e8fb67d40281c
 
 
 --generateSquare n = p2p(Left 1.0, Right (mult (fromIntegral n), ((n-1), (n-1)))) (n>0)
