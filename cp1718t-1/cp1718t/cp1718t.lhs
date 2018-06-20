@@ -1043,10 +1043,13 @@ outlineQTree f = cataQTree (either (mat) (joinmats))
 \subsection*{Problema 3}
 
 \begin{code}
-base = undefined
---base k = split (split one one) (split (succ k) one)
-loop = undefined
---loop = split (split (succ.p1.p1) (mul.p1)) (split (succ.p1.p2) (mul.p2))
+--base = undefined
+--base k =  (split (split one one) (split (succ k) one))
+base k = (1,1,succ k,1)
+--loop = undefined
+loop = unP . swap.split (split (succ.p1.p1) (mul.p1)) (split (succ.p1.p2) (mul.p2)) . makeP
+      where makeP (a,b,c,d) = ((a,b),(c,d))
+            unP ((a,b),(c,d)) = (a,b,c,d)
 \end{code}
 subsection {explicação}
 \begin{eqnarray*}
