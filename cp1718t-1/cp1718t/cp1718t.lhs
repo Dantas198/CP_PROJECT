@@ -1044,7 +1044,9 @@ outlineQTree f = cataQTree (either (mat) (joinmats))
 
 \begin{code}
 base = undefined
+--base k = split (split one one) (split (succ k) one)
 loop = undefined
+--loop = split (split (succ.p1.p1) (mul.p1)) (split (succ.p1.p2) (mul.p2))
 \end{code}
 subsection {explicação}
 \begin{eqnarray*}
@@ -1098,7 +1100,7 @@ f k
   %
   \just\equiv{Fokkinga}
   %
-  |split (f k) (l k) = cataNat(split (either (const 1) mul) (either ( (+1).k) ((+1).p1) ))|
+  |split (l k) (f k) = cataNat(split (either succ.K) (either succ.p1))|
   \qed
   \end{eqnarray*}
 
@@ -1146,37 +1148,34 @@ f k
     %
       \just\equiv{Fokkinga}
     %
-    |split g s  = cataNat (split (either (const 1) mul) ((const 1) ((+1).p1)))|
+    |split s g  = cataNat (split (either (const 1) succ.p1) ((const 1) mul)|
     \qed
     \end{eqnarray*}
 
     \begin{eqnarray*}
     \start
-    Seja |split (f k) (l k) = cataNat i|
-      e  |split g s = cataNat j|
+    Seja |split (l k) (f k) = cataNat i|
+      e  |split s g = cataNat j|
     %
       \just\equiv{recorrendo aos resultados de usar Fokkinga, lei Banana-split, Absorção-x}
-      |split (cataNat i) (cataNat j) = cataNat(split ((split (either (const 1) mul) (either ( (+1).k) ((+1).p1))).F p1)
-                                                     ((split (either (const 1) mul) (either (const 1) ((+1).p1))).F p2) |
+      |split (cataNat i) (cataNat j) = cataNat(split ((split (either (const 1) succ.p1) (either (const 1) mul).F p1)
+                                                     ((split (either (succ.k) (succ.p1)) (either (const 1) mul).F p2) |
     %
-    \just\equiv{Fusão-x}
-    |cataNat(split (split ((either (const 1) mul).(F p1)) ((either ((+1).k) ((+1).p1)).(F p1)) )
-                   (split ((either (const 1) mul).(F p2)) (( either (const 1) ((+1).p1)).(F p2)) )|
+    \just\equiv{Lei da troca}
+    |cataNat(split (either (split (const 1) (const 1)) (split (succ.p1) mul)).F p1
+                   (either (split (succ.k) (const 1)) (split (succ.p1) mul)).F p2)|
     %
-    \just\equiv{F f = (id + f), Absorção-+}
-    |cataNat(split (split (either (const 1) (mul.p1)) (either ((+1).k) ((+1).p1.p1)) )
-                   (split (either (const 1) (mul.p2)) (either (const 1) ((+1).p1.p2)) )|
-    %
-    \just\equiv{Lei da Troca - 2 vezes}
-    |cataNat (split (either (split (const 1) ((+1).k)) (split (mul.p1) ((+1).p1.p1)))
-                    (either (split (const 1) (const 1)) (split (mul.p2) ((+1).p1.p2))))|
+    \just\equiv{F f = (id + f), Absorção-+, Fusão-x}
+    |cataNat(split (either (split (const 1) (const 1)) (split (succ.p1.p1) (mul.p1)))
+                   (either (split (succ.k) (const 1)) (split (succ.p1.p2) (mul.p2))))|
     %
     \just\equiv{Lei da Troca}
-    |cataNat (either (split (split (const 1) ((+1).k)) (split (const 1) (const 1)))
-                     (split (split (mul.p1) ((+1).p1.p2)) (split (mul.p2) ((+1).p1.p2))))|
+    |cataNat (either (split (split (const 1) (const 1)) (split (succ.k) (const 1)))
+                     (split (split (succ.p1.p1) (mul.p1)) (split (succ.p1.p2) (mul.p2))))|
 
    \qed
    \end{eqnarray*}
+
 
 \subsection*{Problema 4}
 
@@ -1186,7 +1185,7 @@ branchBuild (a,(b,c)) = Comp a b c
 intToFloat :: Int -> Float
 intToFloat n = fromInteger (toInteger n)
 
-inFTree = either Unit (branchBuild) 
+inFTree = either Unit (branchBuild)
 --outFTree = undefined --(i1) -|- (i2 (uncurry.(id >< uncurry)))
 outFTree (Unit u) = i1 u
 outFTree (Comp a b c) = i2 (a,(b,c))
@@ -1202,7 +1201,7 @@ instance Bifunctor FTree where
 
 generateSquare :: Int -> Either Square (Square, (Int, Int))
 generateSquare n | n <= 0 = Left 1.0
-                 | otherwise = Right (mult (fromIntegral n), ((n-1), (n-1))) 
+                 | otherwise = Right (mult (fromIntegral n), ((n-1), (n-1)))
           where mult n = ((2 / (sqrt 2))^n)* 1.0
 
 
