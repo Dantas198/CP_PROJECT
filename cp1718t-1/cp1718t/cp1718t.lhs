@@ -1043,11 +1043,13 @@ outlineQTree f = cataQTree (either (mat) (joinmats))
 \subsection*{Problema 3}
 
 \begin{code}
+--(split (split (const 1) (succ.k)) (split (const 1) (const 1))
 --base = undefined
 --base k =  (split (split one one) (split (succ k) one))
-base k = (1,1,succ k,1)
+--(split (split (mul.p1) (succ.p2.p1)) (split (mul.p2) (succ.p2.p2))))
+base k = (1,succ k,1,1)
 --loop = undefined
-loop = unP . swap.split (split (succ.p1.p1) (mul.p1)) (split (succ.p1.p2) (mul.p2)) . makeP
+loop = unP .swap. split (split (mul.p1) (succ.p2.p1)) (split (mul.p2) (succ.p2.p2)) . makeP
       where makeP (a,b,c,d) = ((a,b),(c,d))
             unP ((a,b),(c,d)) = (a,b,c,d)
 \end{code}
@@ -1060,15 +1062,15 @@ f k
     |lcbr(
       f k. (const 0) = const 1
         )(
-      f k. succ = mul.split (l k) (f k)
+      f k. succ = mul.split (f k) (l k)
         )|
         %
         \just\equiv{ Eq-+}
-  |either (f k. const 0) (fk.succ) = either (const 1) (mul. split (l k) (f k))|
+  |either (f k. const 0) (fk.succ) = either (const 1) (mul. split (f k) (l k))|
   %
   \just\equiv{ Fusão-+ e Absorção-+}
   %
-  |f k.inN = either (const 1) (mul) .(id + split(l k) (f k))|
+  |f k.inN = either (const 1) (mul) .(id + split(f k) (l k))|
   \qed
   \end{eqnarray*}
   \begin{eqnarray*}
@@ -1087,7 +1089,7 @@ f k
   %
   \just\equiv{Fusão-+, Absorção-+ e Cancelamento-x}
   %
-  |l k. inN = (either ((+1).k) ((+1).p1)).(id + split (f k) (l k))|
+  |l k. inN = (either ((+1).k) ((+1).p2)).(id + split (f k) (l k))|
   \qed
   \end{eqnarray*}
   \begin{eqnarray*}
@@ -1096,14 +1098,14 @@ f k
   Juntando as duas funções para usar "Fokkinga":
   %
       |lcbr(
-        f k.inN = either (const 1) (mul) .(id + split(l k) (f k))
+        f k.inN = either (const 1) (mul) .(id + split(f k) (l k))
           )(
-        l k. inN = (either ((+1).k) ((+1).p1)).(id + split (f k) (l k))
+        l k. inN = (either ((+1).k) ((+1).p2)).(id + split (f k) (l k))
           )|
   %
   \just\equiv{Fokkinga}
   %
-  |split (l k) (f k) = cataNat(split (either succ.K) (either succ.p1))|
+  |split (f k) (l k) = cataNat(split (either (const 1) mul) (either succ.k succ.p2))|
   \qed
   \end{eqnarray*}
 
@@ -1115,12 +1117,12 @@ f k
       |lcbr(
         g. (const 0) = const 1
           )(
-        g. succ = mul.split s g
+        g. succ = mul.split g s
           )|
   %
   \just\equiv{ Eq-+, Fusão-+ e Absorção-+}
 
-  |g.inN = (either (const 1) mul).(id + split s g)|
+  |g.inN = (either (const 1) mul).(id + split g s)|
   \qed
   \end{eqnarray*}
 
@@ -1137,44 +1139,44 @@ f k
   %
   \just\equiv{ Eq-+, Fusão-+, Absorção-+ e Cancelamento-x}
 
-  |s.inN =  (either (const 1) ((+1).p1)).(id + split s g)|
+  |s.inN =  (either (const 1) ((+1).p2)).(id + split g s)|
   \qed
   \end{eqnarray*}
   \begin{eqnarray*}
   \start
     Juntando as duas funções para usar "Fokkinga":
       |lcbr(
-        g.inN = (either (const 1) mul).(id + split s g)
+        g.inN = (either (const 1) mul).(id + split g s)
             )(
-        s.inN =  (either (const 1) ((+1).p1)).(id + split s g)
+        s.inN =  (either (const 1) ((+1).p2)).(id + split g s)
             )|
     %
       \just\equiv{Fokkinga}
     %
-    |split s g  = cataNat (split (either (const 1) succ.p1) ((const 1) mul)|
+    |split s g  = cataNat (split (either (const 1) mul) (either (const 1) ((+1).p2)))|
     \qed
     \end{eqnarray*}
 
     \begin{eqnarray*}
     \start
-    Seja |split (l k) (f k) = cataNat i|
-      e  |split s g = cataNat j|
+    Seja |split (f k) (l k) = cataNat i|
+      e  |split g s = cataNat j|
     %
       \just\equiv{recorrendo aos resultados de usar Fokkinga, lei Banana-split, Absorção-x}
-      |split (cataNat i) (cataNat j) = cataNat(split ((split (either (const 1) succ.p1) (either (const 1) mul).F p1)
-                                                     ((split (either (succ.k) (succ.p1)) (either (const 1) mul).F p2) |
+      |split (cataNat i) (cataNat j) = cataNat(split ((split (either (const 1) mul) (either (succ.k) succ.p2).F p1)
+                                                     ((split (either (const 1) mul) (either (const 1) succ.p2).F p2) |
     %
-    \just\equiv{Lei da troca}
-    |cataNat(split (either (split (const 1) (const 1)) (split (succ.p1) mul)).F p1
-                   (either (split (succ.k) (const 1)) (split (succ.p1) mul)).F p2)|
+    \just\equiv{Lei da troca -- 2 vezes}
+    |cataNat(split (either (split (const 1) (succ.k)) (split mul succ.p2)).F p1
+                   (either (split (const 1) (const 1)) (split mul succ.p2)).F p2)|
     %
     \just\equiv{F f = (id + f), Absorção-+, Fusão-x}
-    |cataNat(split (either (split (const 1) (const 1)) (split (succ.p1.p1) (mul.p1)))
-                   (either (split (succ.k) (const 1)) (split (succ.p1.p2) (mul.p2))))|
+    |cataNat(split (either (split (const 1) (succ.k)) (split (mul.p1) (succ.p2.p1)))
+                   (either (split (const 1) (const 1)) (split (mul.p2) (succ.p2.p2))))|
     %
     \just\equiv{Lei da Troca}
-    |cataNat (either (split (split (const 1) (const 1)) (split (succ.k) (const 1)))
-                     (split (split (succ.p1.p1) (mul.p1)) (split (succ.p1.p2) (mul.p2))))|
+    |cataNat (either (split (split (const 1) (succ.k)) (split (const 1) (const 1)))
+                     (split (split (mul.p1) (succ.p2.p1)) (split (mul.p2) (succ.p2.p2))))|
 
    \qed
    \end{eqnarray*}
