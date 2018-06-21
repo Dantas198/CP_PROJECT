@@ -1201,36 +1201,40 @@ anaFTree g = inFTree . recFTree (anaFTree g) . g
 hyloFTree h g = cataFTree h . anaFTree g
 
 instance Bifunctor FTree where
-    bimap = undefined
-
+     bimap f g = cataFTree ( inFTree . baseFTree f g id )
 
 generateSquare :: Int -> Either Square (Square, (Int, Int))
-generateSquare n | n <= 0 = Left 1.0
-                 | otherwise = Right (mult (fromIntegral n), ((n-1), (n-1)))
-          where mult n = ((2 / (sqrt 2))^n)* 1.0
-
-
---generateSquare n = p2p(Left 1.0, Right (mult (fromIntegral n), ((n-1), (n-1)))) (n>0)
-           -- where mult n = (((sqrt 2) / 2)*n)* 1.0
+generateSquare n = if (0>=n) then i1 1.0 else i2 (mult (fromIntegral n), (predNat n, predNat n))
+      where mult n = ((2 / (sqrt 2))^n)* 1.0
 
 generatePTree = anaFTree (generateSquare)
 
 
-type Fractal = ((Square,Bool) , Point)
+type Fractal = ((Square,Bool) , (Int, Point))
+type FractalTree = FTree Fractal Fractal
 
-drawSquareFixed :: Fractal -> [Picture]
-drawSquareFixed ((tam,incl),(x,y)) = p2p (retNormal, retIncl) (incl)
-  where d = tam/2
-        retNormal = [Polygon ((x-d, y-d): (x-d, y+d): (x+d, y+d): (x+d, y-d):[])]
-        retIncl = [Polygon ((x-d, y-d): (x-d, y+d): (x+d, y+d): (x+d, y-d):[])]
+--drawSquareFixed :: Fractal -> [Picture]
+--drawSquareFixed ((tam,incl),(x,y)) = p2p (retNormal, retIncl) (incl)
+--  where d = tam/2
+--        retNormal = [Polygon ((x-d, y-d): (x-d, y+d): (x+d, y+d): (x+d, y-d):[])]
+--        retIncl = [Polygon ((x-d, y-d): (x-d, y+d): (x+d, y+d): (x+d, y-d):[])]
 
 
 
-toFractal :: Either Square (Square, ([Fractal], [Fractal])) -> [Fractal]
-toFractal (Left s) = [((s, True), (0,0))]
-toFractal (Right s) =[((p1 s, True), (0,0))]
+toFractal :: (Fractal -> Either Fractal (Fractal, (Fractal, Fractal)))
+toFractal = undefined --if (p1.p2 <= 0) then i1 else i2.split id (split nextFractal nextFractal)
 
-drawPTree = undefined --cataFTree (toFractal)
+nextFractal :: Fractal -> Fractal
+nextFractal = undefined
+
+toPictures :: Either Fractal (Fractal, ([Picture], [Picture])) -> [Picture]
+toPictures = either (fractToPic) (conc.(fractToPic >< conc))
+
+fractToPic :: Fractal -> [Picture]
+fractToPic = undefined
+
+
+drawPTree t = cataFTree (toPictures) (anaFTree(toFractal) ((10, False),(depthFTree t, (0,0))))
 \end{code}
 
 \subsection*{Problema 5}
