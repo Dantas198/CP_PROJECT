@@ -1049,7 +1049,7 @@ outlineQTree f = cataQTree (either (mat) (joinmats))
 --(split (split (mul.p1) (succ.p2.p1)) (split (mul.p2) (succ.p2.p2))))
 base k = (1,succ k,1,1)
 --loop = undefined
-loop = unP .swap. split (split (mul.p1) (succ.p2.p1)) (split (mul.p2) (succ.p2.p2)) . makeP
+loop = unP . split (split (mul.p1) (succ.p2.p1)) (split (mul.p2) (succ.p2.p2)) . makeP
       where makeP (a,b,c,d) = ((a,b),(c,d))
             unP ((a,b),(c,d)) = (a,b,c,d)
 \end{code}
