@@ -1192,7 +1192,10 @@ intToFloat :: Int -> Float
 intToFloat n = fromInteger (toInteger n)
 
 inFTree = either Unit (branchBuild)
+<<<<<<< HEAD
 
+=======
+>>>>>>> 72011b6150c87ba0ddb74fdd1f29e8df30a81b04
 outFTree (Unit u) = i1 u
 outFTree (Comp a b c) = i2 (a,(b,c))
 baseFTree f g h =  g -|- (f >< ( h >< h))
@@ -1211,31 +1214,28 @@ generateSquare n = if (0>=n) then i1 1.0 else i2 (mult (fromIntegral n), (predNa
 generatePTree = anaFTree (generateSquare)
 
 
-type Fractal = ((Square,Bool) , (Int, Point))
+type Fractal = ((Square,Bool) , Point)
 type FractalTree = FTree Fractal Fractal
 
---drawSquareFixed :: Fractal -> [Picture]
---drawSquareFixed ((tam,incl),(x,y)) = p2p (retNormal, retIncl) (incl)
---  where d = tam/2
---        retNormal = [Polygon ((x-d, y-d): (x-d, y+d): (x+d, y+d): (x+d, y-d):[])]
---        retIncl = [Polygon ((x-d, y-d): (x-d, y+d): (x+d, y+d): (x+d, y-d):[])]
-
-
-
 toFractal :: (Fractal -> Either Fractal (Fractal, (Fractal, Fractal)))
-toFractal = undefined --if (p1.p2 <= 0) then i1 else i2.split id (split nextFractal nextFractal)
+toFractal ((tam, bool), (x,y)) = if ( tam  <= 1) then i1 ((tam, bool), (x,y)) else  i2 (((tam, bool), (x,y)), (nextFractal ((tam, bool), (x,y)), nextFractal ((tam, bool), (x,y))))
+            --a-i2.split id (split nextFractal nextFractal)
 
 nextFractal :: Fractal -> Fractal
-nextFractal = undefined
+nextFractal ((tam, bool), (x,y)) = ((tam* sqrt(2) / 2, not bool), (x, y+ tam)) 
 
 toPictures :: Either Fractal (Fractal, ([Picture], [Picture])) -> [Picture]
 toPictures = either (fractToPic) (conc.(fractToPic >< conc))
 
 fractToPic :: Fractal -> [Picture]
-fractToPic = undefined
+fractToPic ((tam, bool), (x,y)) = p2p (retNormal ((tam, bool), (x,y)), retInclinado ((tam, bool), (x,y))) (bool)
+      where retNormal ((tam, bool), (x,y)) =    [Polygon ((x, y): (x- tam, y): (x- tam, y+ tam): (x, y + tam):[])]
+            retInclinado ((tam, bool), (x,y)) = [Polygon ((x, y): (x- (raio tam), y + (raio tam)): (x, y + 2* (raio tam)): (x + (raio tam), y + (raio tam)):[])]
+            raio tam = sqrt(2* tam)/2.0
 
+drawPTree = cataFTree toPictures . anaFTree toFractal . initFractal
+        where initFractal = split id (const (0.0,0.0)).((split id false).either id p1).outFTree
 
-drawPTree t = cataFTree (toPictures) (anaFTree(toFractal) ((10, False),(depthFTree t, (0,0))))
 \end{code}
 
 \subsection*{Problema 5}
