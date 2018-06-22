@@ -81,17 +81,17 @@
 %---------------------------------------------------------------------------
 
 \title{
-       	    Cálculo de Programas
+            Cálculo de Programas
 \\
-       	Trabalho Prático
+        Trabalho Prático
 \\
-       	MiEI+LCC --- 2017/18
+        MiEI+LCC --- 2017/18
 }
 
 \author{
-       	\dium
+        \dium
 \\
-       	Universidade do Minho
+        Universidade do Minho
 }
 
 
@@ -625,15 +625,15 @@ teste2a = outlineQTree (==0) qt == qtOut
 \section*{Problema 3}
 O cálculo das combinações de |n| |k|-a-|k|,
 \begin{eqnarray}
-	|bin n k = frac (fac n)(fac k * (fac ((n-k))))|
-	\label{eq:bin}
+  |bin n k = frac (fac n)(fac k * (fac ((n-k))))|
+  \label{eq:bin}
 \end{eqnarray}
 envolve três factoriais. Recorrendo à \material{lei de recursividade múltipla} do cálculo
 de programas, é possível escrever o mesmo programa como um simples ciclo-for
 onde se fazem apenas multiplicações e somas. Para isso, começa-se por estruturar
 a definição dada da forma seguinte,
 \begin{eqnarray*}
-	|bin n k = h k (n - k)|
+  |bin n k = h k (n - k)|
 \end{eqnarray*}
 onde
 \begin{eqnarray*}
@@ -785,7 +785,7 @@ marbleWeights = fmap marbleWeight bagOfMarbles
 \end{code}
 onde |bagOfMarbles| é o saco de berlindes referido acima, obtendo-se:
 \begin{quote}\small
-	\verb!{ 2 |-> 3 , 3 |-> 5 , 6 |-> 2 }!.
+  \verb!{ 2 |-> 3 , 3 |-> 5 , 6 |-> 2 }!.
 \end{quote}
 %
 Mais ainda, se quisermos saber o total de berlindes em |bagOfMarbles| basta
@@ -831,7 +831,7 @@ instance Monad Bag where
 \item
 Defina a função |muB| (multiplicação do mónade |Bag|) e a função auxiliar
 |singletonbag|.
-\item	Verifique-as com os seguintes testes unitários:
+\item Verifique-as com os seguintes testes unitários:
 %if False
 \begin{code}
 muB :: Bag (Bag a) -> Bag a
@@ -874,8 +874,8 @@ efeitos especiais em progra\-mação. Por exemplo, a biblioteca \Probability\
 oferece um mónade para abordar problemas de probabilidades. Nesta biblioteca,
 o conceito de distribuição estatística é captado pelo tipo
 \begin{eqnarray}
-	|newtype Dist a = D {unD :: [(a, ProbRep)]}|
-	\label{eq:Dist}
+  |newtype Dist a = D {unD :: [(a, ProbRep)]}|
+  \label{eq:Dist}
 \end{eqnarray}
 em que |ProbRep| é um real de |0| a |1|, equivalente a uma escala de |0| a |100%|.
 
@@ -1230,6 +1230,17 @@ hyloFTree h g = cataFTree h . anaFTree g
 instance Bifunctor FTree where
      bimap f g = cataFTree ( inFTree . baseFTree f g id )
 
+rotateVector :: (Float, Float) -> Float -> (Float, Float)
+rotateVector (x,y) ang = (nx, ny)
+    where nx = ( x * (cos ang)) + (y * (sin ang))
+          ny = ((-x) * (sin ang)) + (y * (cos ang))
+
+resizeVector :: Float -> (Float, Float)  -> (Float, Float)
+resizeVector i (x,y) = (i*x, i*y)
+
+addVetores :: (Float, Float) -> (Float, Float) -> (Float, Float)
+addVetores (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)
+
 generateSquare :: (Int, Square) -> Either Square (Square, ((Int,Square), (Int,Square)))
 generateSquare (n, f) = if (0>=n) then i1 f else i2 ( f , ((predNat n, fator f), (predNat n, fator f)))
       where fator f = f * (sqrt(2)/2)
@@ -1246,19 +1257,20 @@ toFractal ((ang, tam), ((x,y), (Unit a))) = i1 ((ang, tam), ((x,y), Unit a))
 
 nextFractais :: Fractal -> (Fractal, Fractal)
 nextFractais ((ang ,tam),((x,y), Unit a)) = undefined --nunca acontece
-nextFractais ((ang ,tam),((x,y), Comp fator b c)) =(((angEsq, tam), ((x, y + (abs ladoCos) ), b)), ((angDir, tam),((x - ladoCos + ladoSin ,y + (abs ladoCos)), c)))
-           where angEsq = ang - 45
-                 angDir = ang + 45
-                 lado = fator * tam
-                 ladoCos = lado * cos ang
-                 ladoSin = lado * sin ang
-
+nextFractais ((ang ,tam),((x,y), Comp fator b c)) =(fractalEsq ((ang ,tam),((x,y), b)) fator , fractalDir((ang ,tam),((x,y), c)) fator)
+   where angEsq = ang + 45
+         angDir = ang - 45
+         lado = fator * tam
+         angInDegree ang = ang *(pi / 180)
+         fractalEsq ((ang ,tam),((x,y), b)) fator = ((angDir, tam),(addVetores (x,y) (resize fator ve)), c)
+         fractalDir ((ang ,tam),((x,y), c)) fator = ((angEsq, tam),(addVetores (x,y) (resize fator vd)), b)
+         (ve , vd ) = (rotateVector (-tam/2, tam +  sqrt((tam*tam)/4)) (angInDegree ang), rotateVector (0, tam) (angInDegree ang))
 
 toPictures :: Either Fractal (Fractal, ([Picture], [Picture])) -> [Picture]
 toPictures = either (fractToPic) (conc.(fractToPic >< conc))
 
 fractToPic :: Fractal -> [Picture]
-fractToPic ((ang,tam), ((vx,vy), tree)) = [Translate vx vy (Scale toScale toScale (Rotate ang (Polygon ((0, 0): (0 - tam, vy): (0 - tam, 
+fractToPic ((ang,tam), ((vx,vy), tree)) = [Translate vx vy (Scale toScale toScale (Rotate ang (Polygon ((0, 0): (0 - tam, 0): (0 - tam, 
   0 + tam): (0, 0 +  tam):[]))))]
      where toScale = either id p1 (outFTree tree)
 
@@ -1283,23 +1295,23 @@ dist (B x) = uniform (concat [replicate a d | (d,a) <- x])
 Estudar o texto fonte deste trabalho para obter o efeito:\footnote{Exemplos tirados de \cite{Ol18}.}
 \begin{eqnarray*}
 \start
-	|id = split f g|
+  |id = split f g|
 %
 \just\equiv{ universal property }
 %
         |lcbr(
-		p1 . id = f
-	)(
-		p2 . id = g
-	)|
+    p1 . id = f
+  )(
+    p2 . id = g
+  )|
 %
 \just\equiv{ identity }
 %
         |lcbr(
-		p1 = f
-	)(
-		p2 = g
-	)|
+    p1 = f
+  )(
+    p2 = g
+  )|
 \qed
 \end{eqnarray*}
 
