@@ -1258,7 +1258,8 @@ toPictures :: Either Fractal (Fractal, ([Picture], [Picture])) -> [Picture]
 toPictures = either (fractToPic) (conc.(fractToPic >< conc))
 
 fractToPic :: Fractal -> [Picture]
-fractToPic ((ang,tam), ((vx,vy), tree)) = [Tranlate vx vy (Scale toScale toScale (Rotate ang (Polygon ((x, y): (x - tam, y): (x - tam, y + tam): (x, y +  tam):[]))))]
+fractToPic ((ang,tam), ((vx,vy), tree)) = [Translate vx vy (Scale toScale toScale (Rotate ang (Polygon ((0, 0): (0 - tam, vy): (0 - tam, 
+  0 + tam): (0, 0 +  tam):[]))))]
      where toScale = either id p1 (outFTree tree)
 
 
