@@ -995,19 +995,21 @@ isValidMagicNr = (uncurry (==)).(split (length.n) (length.nub.n))
 
 
 \subsection*{Problema 2}
-
+\subsubsection*{Funções Auxiliares}
 \begin{code}
 pQ1 = p1
 pQ2 = p1.p2
 pQ3 = p1.p2.p2
 pQ4 = p2.p2.p2
-q4x (x,y,z,t) = (x><(y><(z><t))) --para nao ter muitas confusoes com parenteses
+q4x (x,y,z,t) = (x><(y><(z><t)))
 q4xu h = q4x (h,h,h,h)
 splitq4 (x,y,z,t)  = split x (split y (split z t))
 splitq4u h = splitq4 (h,h,h,h)
 cellBuild (a,(b,c)) = Cell a b c
 q4toList ((x,(y,(z,d)))) = x:y:z:d:[]
+\end{code}
 
+\begin{code}
 inQTree (Left c) = cellBuild c
 inQTree (Right x) = Block (pQ1 x) (pQ2 x) (pQ3 x) (pQ4 x)
 outQTree (Cell a b c) = i1 (a,(b,c))
@@ -1017,16 +1019,39 @@ recQTree f = baseQTree id f
 cataQTree g = g . recQTree (cataQTree g) . outQTree
 anaQTree g = inQTree . recQTree (anaQTree g) . g
 hyloQTree h g=  cataQTree h . anaQTree g
-
 instance Functor QTree where
     fmap f = cataQTree (inQTree . baseQTree f id)
+\end{code}
 
+\subsubsection*{Soluções}
+
+\begin{code}
 rotateQTree = cataQTree (either (cellBuild.(id><swap)) (inQTree.i2.z))
     where z (q1,(q2,(q3,q4))) = (q3,(q1,(q4,q2)))
+\end{code}
+
+Redimencionamento a partir da alteração dos inteiros contidos em cada célula
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+|A >< (B >< C)| \ar[r]^{|(id><swap)|} & |A >< (C >< B)|\\}
+\end{eqnarray*}
+
+Troca das células de um bloco para obtermos a rotação
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+|A >< (B >< (C >< D)| \ar[r]^{|(z)|} & |C >< (A >< (D >< B))|\\}
+\end{eqnarray*}
+
+\begin{code}
 scaleQTree i x = cataQTree (either (cellBuild.(\(a,(b,c)) -> (a,(b*i,c*i)))) (inQTree.i2)) x
+\end{code}
+
+\begin{code}
 invertQTree = fmap (f)
     where f (PixelRGBA8 r g b a) = PixelRGBA8 (255-r) (255-g) (255-b) (a)
+\end{code}
 
+\begin{code}
 compressAux :: QTree a -> QTree a
 compressAux (Block (Cell a b1 c1) (Cell _ b2 c2) (Cell _ b3 c3) (Cell _ b4 c4)) = (Cell a (b1+b2) (c1+c3))
 compressAux x = x
@@ -1035,7 +1060,9 @@ compressQTree i x = p2 (cataQTree (either (split (const 0) (cellBuild)) (v.f)) x
           where
                 f = split ((+1).maximum.q4toList.q4xu(p1)) (inQTree.i2.q4xu(p2))
                 v x = if (p1 x) <= i then (id><compressAux) x else x
+\end{code}
 
+\begin{code}
 outlineQTree f = cataQTree (either (mat) (joinmats))
     where mat (x,(i,j)) = matrix j i (\(a,b) -> if ( (a==1 || a == j) || (b==1 || b==i)) then (f x) else False)
           joinmats (a,(b,(c,d))) = (a <|> b) <-> (c <|> d)
@@ -1192,10 +1219,6 @@ intToFloat :: Int -> Float
 intToFloat n = fromInteger (toInteger n)
 
 inFTree = either Unit (branchBuild)
-<<<<<<< HEAD
-
-=======
->>>>>>> 72011b6150c87ba0ddb74fdd1f29e8df30a81b04
 outFTree (Unit u) = i1 u
 outFTree (Comp a b c) = i2 (a,(b,c))
 baseFTree f g h =  g -|- (f >< ( h >< h))
@@ -1222,7 +1245,7 @@ toFractal ((tam, bool), (x,y)) = if ( tam  <= 1) then i1 ((tam, bool), (x,y)) el
             --a-i2.split id (split nextFractal nextFractal)
 
 nextFractal :: Fractal -> Fractal
-nextFractal ((tam, bool), (x,y)) = ((tam* sqrt(2) / 2, not bool), (x, y+ tam)) 
+nextFractal ((tam, bool), (x,y)) = ((tam* sqrt(2) / 2, not bool), (x, y+ tam))
 
 toPictures :: Either Fractal (Fractal, ([Picture], [Picture])) -> [Picture]
 toPictures = either (fractToPic) (conc.(fractToPic >< conc))
