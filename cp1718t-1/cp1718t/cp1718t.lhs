@@ -1231,10 +1231,8 @@ toPictures :: Either Fractal (Fractal, ([Picture], [Picture])) -> [Picture]
 toPictures = either (fractToPic) (conc.(fractToPic >< conc))
 
 fractToPic :: Fractal -> [Picture]
-fractToPic ((ang,tam), ((x,y), tree)) = [Polygon ((x, y): (x + ladoCos, y + (abs ladoSin)): (x + (ladoCos + ladoSin), y + ( (abs ladoCos) + (abs ladoSin))): (x + ladoSin, y +  (abs ladoCos) ):[])]
+fractToPic ((ang,tam), ((x,y), tree)) = [Rotate ang (Polygon ((x, y): (x - lado, y): (x - lado, y + lado): (x - lado, y +  lado):[]))]
      where lado = tam * (either id p1 (outFTree tree))
-           ladoCos = lado * cos ang
-           ladoSin = lado * sin ang
 
 
 drawPTree = cataFTree toPictures . anaFTree toFractal . initFractal
