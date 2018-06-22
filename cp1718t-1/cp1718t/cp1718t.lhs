@@ -972,7 +972,7 @@ alterados os nomes ou tipos das funções dadas, mas pode ser adicionado texto e
 outras funções auxiliares que sejam necessárias.
 
 \subsection*{Problema 1}
-
+\subsubsection*{Funções Auxiliares}
 \begin{code}
 inBlockchain = either Bc Bcs
 outBlockchain (Bc a) = i1 (a)
@@ -981,17 +981,73 @@ recBlockchain f = id -|- id >< f
 cataBlockchain g   = g . recBlockchain (cataBlockchain g) . outBlockchain
 anaBlockchain  g   = inBlockchain . recBlockchain (anaBlockchain g) . g
 hyloBlockchain h g = cataBlockchain h . anaBlockchain g
+\end{code}
 
+\subsubsection*{allTransactions}
+
+\begin{code}
 allTransactions =  cataBlockchain (either (g) (conc.((g)><id)))
     where g = p2.p2
-ledger = map pairList2Pair.groupBy(groupByFst).sort.cataBlockchain (either (block2LedgeList) (conc.((block2LedgeList)><id)))
-    where pairList2Pair (x) = ((p1.head) x,(sum ([p2(y) | y <- x])))
+\end{code}
+
+Utilizamos um catamorfismo para aplicar recursividade à blockChain, quando temos um Bc aplicamos g ao Block:
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+|A ><(C >< D)| \ar[r]^g &D\\}
+\end{eqnarray*}
+
+Se tivermos um Bcs:
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+|(Block >< Transactions)| \ar[r]^{|conc.(g><id)|} &Transactions\\}
+\end{eqnarray*}
+
+\subsubsection*{ledger}
+\begin{code}
+ledger = joinledges.cataBlockchain (either (block2LedgeList) (conc.((block2LedgeList)><id)))
+    where joinledges = map pairList2Pair.groupBy(groupByFst).sort
+          pairList2Pair (x) = ((p1.head) x,(sum ([p2(y) | y <- x])))
           groupByFst x y = (p1 x) == (p1 y)
           block2LedgeList = concat.(map (conc.ledgeSinglePair)).p2.p2
           ledgeSinglePair = split (singl.(id><p1)) (singl.(id><negate).swap.p2)
+
+\end{code}
+Utilizando um catamorfismo obtemos uma lista de pares de entidades e o valor da transação, as funções
+para obter este resultado encontram-se a seguir:
+block2LedgeList:
+
+\begin{eqnarray*}
+\xymatrix{
+|Block| \ar[d]^{|p2.p2|}\\
+|Transactions| \ar[d]^{|map (conc.ledgeSinglePair)|} \\
+|[[Entity><Value]]| \ar[d]^{|concat|}\\
+|[Entity><Value]|}}
+\end{eqnarray*}
+
+ledgeSinglePair:
+
+\begin{eqnarray*}
+\xymatrix{
+|(Entity><(Value><Entity))| \ar[d]^{ledgeSinglePair} \\
+|[Entity><Value]|\\}}
+\end{eqnarray*}
+
+Depois de termos [(Entity,Value)] vamos chamar a função "joinledges" que essencialmente
+ordena todos os pares da lista, para ficarem os pares com a mesma "Entity" seguidos na lista. Depois
+agrupamos todos esses pares numa lista, sendo o critério a "Entity". Por fim fazemos um map onde
+por cada lista contida da [[(Entity,Value)]] formamos um par através da "pairList2Pair" esse par
+será (Entity, soma de todos os "Values" na lista), obtendo assim o resultado final.
+
+
+\subsubsection*{isValidMagicNr}
+\begin{code}
 isValidMagicNr = (uncurry (==)).(split (length.n) (length.nub.n))
     where n = cataBlockchain (either (singl.p1) (cons.(p1><id)))
 \end{code}
+
+Foi utilizado um catamorfismo para criar uma lista com todos os "MagicNr", depois foi comparado
+o comprimento dessa lista com o da mesma, mas sem repetidos, utilizando a função "nub". Caso seja igual apenas
+existem "MagicNr" únicos.
 
 
 \subsection*{Problema 2}
@@ -1003,8 +1059,6 @@ pQ3 = p1.p2.p2
 pQ4 = p2.p2.p2
 q4x (x,y,z,t) = (x><(y><(z><t)))
 q4xu h = q4x (h,h,h,h)
-splitq4 (x,y,z,t)  = split x (split y (split z t))
-splitq4u h = splitq4 (h,h,h,h)
 cellBuild (a,(b,c)) = Cell a b c
 q4toList ((x,(y,(z,d)))) = x:y:z:d:[]
 \end{code}
@@ -1024,7 +1078,7 @@ instance Functor QTree where
 \end{code}
 
 \subsubsection*{Soluções}
-
+\subsubsection*{rotateQTree}
 \begin{code}
 rotateQTree = cataQTree (either (cellBuild.(id><swap)) (inQTree.i2.z))
     where z (q1,(q2,(q3,q4))) = (q3,(q1,(q4,q2)))
@@ -1042,15 +1096,29 @@ Troca das células de um bloco para obtermos a rotação
 |A >< (B >< (C >< D)| \ar[r]^{|(z)|} & |C >< (A >< (D >< B))|\\}
 \end{eqnarray*}
 
+
+
+\subsubsection*{scaleQTree}
 \begin{code}
 scaleQTree i x = cataQTree (either (cellBuild.(\(a,(b,c)) -> (a,(b*i,c*i)))) (inQTree.i2)) x
 \end{code}
 
+Através de um catamorfismo vamos em todas as células da árvore multiplicar os seus inteiros por um fator.
+
+
+
+\subsubsection*{invertQTree}
 \begin{code}
 invertQTree = fmap (f)
     where f (PixelRGBA8 r g b a) = PixelRGBA8 (255-r) (255-g) (255-b) (a)
 \end{code}
 
+Utilizando um fmap modificamos o pixel de cada célula
+
+
+
+
+\subsubsection*{compressQTree}
 \begin{code}
 compressAux :: QTree a -> QTree a
 compressAux (Block (Cell a b1 c1) (Cell _ b2 c2) (Cell _ b3 c3) (Cell _ b4 c4)) = (Cell a (b1+b2) (c1+c3))
@@ -1062,26 +1130,42 @@ compressQTree i x = p2 (cataQTree (either (split (const 0) (cellBuild)) (v.f)) x
                 v x = if (p1 x) <= i then (id><compressAux) x else x
 \end{code}
 
+O catamorfismo utilizado para esta solução devolve um par (Int, QTree a), sendo o primeiro elemento a altura total
+e o segundo a árvore.Chamamos altura visto que o catamorfismo começa por baixo.
+Com a função auxiliar f vamos etiquetando cada subÁrvore com a sua altura, (Altura, Árvore).
+
+\begin{eqnarray*}
+\xymatrix@@C=3cm{
+|(A><B)><(A><B)><(A><B)><(A><B)|  \ar[r]^{|q4xu(p1)|}  &|A><(A><(A><A))|\\}
+\end{eqnarray*}
+\begin{eqnarray*}
+\xymatrix@@C=4cm{
+|A><(A><(A><A))| \ar[r]^{|(+1).maximum.q4toList|} & |A|\\}
+\end{eqnarray*}
+
+Com a função auxiliar v verificamos se estamos a uma altura inferior ou igual à profundidade dada, em caso afimativo
+comprimimos utilizando a "compressAux" para cortar folhas.
+
+
+\subsubsection*{outlineQTree}
 \begin{code}
 outlineQTree f = cataQTree (either (mat) (joinmats))
     where mat (x,(i,j)) = matrix j i (\(a,b) -> if ( (a==1 || a == j) || (b==1 || b==i)) then (f x) else False)
           joinmats (a,(b,(c,d))) = (a <|> b) <-> (c <|> d)
 \end{code}
 
+O catamorfismo permite construir a matriz sempre temos uma célula, neste caso verificamos se estámos nas bordas
+da matriz e aí chamamos a função "f", caso contrário será Falso. Quando temos um Block juntamos as suas matrizes.
+
 \subsection*{Problema 3}
 
 \begin{code}
---(split (split (const 1) (succ.k)) (split (const 1) (const 1))
---base = undefined
---base k =  (split (split one one) (split (succ k) one))
---(split (split (mul.p1) (succ.p2.p1)) (split (mul.p2) (succ.p2.p2))))
 base k = (1,succ k,1,1)
---loop = undefined
-loop = unP . split (split (mul.p1) (succ.p2.p1)) (split (mul.p2) (succ.p2.p2)) . makeP
+loop = unmakeP . split (split (mul.p1) (succ.p2.p1)) (split (mul.p2) (succ.p2.p2)) . makeP
       where makeP (a,b,c,d) = ((a,b),(c,d))
-            unP ((a,b),(c,d)) = (a,b,c,d)
+            unmakeP ((a,b),(c,d)) = (a,b,c,d)
 \end{code}
-subsection {explicação}
+\subsection *{Explicação}
 \begin{eqnarray*}
 \start
 f k
@@ -1107,17 +1191,17 @@ f k
   %
   \just\equiv{Pointfree}
       |lcbr(
-        l k. (const 0) = (+1).k
+        l k. (const 0) = succ.k
           )(
-        l k. succ = (+1).l k
+        l k. succ = succ.l k
           )|
           %
           \just\equiv{ Eq-+}
-  |either (l k. const 0) (lk.succ) = either ((+1).k) ((+1).l k)|
+  |either (l k. const 0) (lk.succ) = either (succ.k) (succ.l k)|
   %
   \just\equiv{Fusão-+, Absorção-+ e Cancelamento-x}
   %
-  |l k. inN = (either ((+1).k) ((+1).p2)).(id + split (f k) (l k))|
+  |l k. inN = (either (succ.k) (succ.p2)).(id + split (f k) (l k))|
   \qed
   \end{eqnarray*}
   \begin{eqnarray*}
@@ -1128,7 +1212,7 @@ f k
       |lcbr(
         f k.inN = either (const 1) (mul) .(id + split(f k) (l k))
           )(
-        l k. inN = (either ((+1).k) ((+1).p2)).(id + split (f k) (l k))
+        l k. inN = (either (succ.k) (succ.p2)).(id + split (f k) (l k))
           )|
   %
   \just\equiv{Fokkinga}
@@ -1137,77 +1221,85 @@ f k
   \qed
   \end{eqnarray*}
 
-  \begin{eqnarray*}
-  \start
-  g
-  %
-  \just\equiv{Pointfree}
-      |lcbr(
-        g. (const 0) = const 1
+\begin{eqnarray*}
+\start
+g
+%
+\just\equiv{Pointfree}
+    |lcbr(
+      g. (const 0) = const 1
+        )(
+      g. succ = mul.split g s
+        )|
+%
+\just\equiv{ Eq-+, Fusão-+ e Absorção-+}
+
+|g.inN = (either (const 1) mul).(id + split g s)|
+\qed
+\end{eqnarray*}
+
+\begin{eqnarray*}
+\start
+s
+%
+\just\equiv{Pointfree}
+    |lcbr(
+      s. (const 0) = const 1
+        )(
+      s. succ = succ.s
+        )|
+%
+\just\equiv{ Eq-+, Fusão-+, Absorção-+ e Cancelamento-x}
+
+|s.inN =  (either (const 1) (succ.p2)).(id + split g s)|
+\qed
+\end{eqnarray*}
+\begin{eqnarray*}
+\start
+  Juntando as duas funções para usar "Fokkinga":
+    |lcbr(
+      g.inN = (either (const 1) mul).(id + split g s)
           )(
-        g. succ = mul.split g s
+      s.inN =  (either (const 1) (succ.p2)).(id + split g s)
           )|
   %
-  \just\equiv{ Eq-+, Fusão-+ e Absorção-+}
-
-  |g.inN = (either (const 1) mul).(id + split g s)|
+    \just\equiv{Fokkinga}
+  %
+  |split s g  = cataNat (split (either (const 1) mul) (either (const 1) ((+1).p2)))|
   \qed
   \end{eqnarray*}
 
   \begin{eqnarray*}
   \start
-  s
+  Seja |split (f k) (l k) = cataNat i|
+    e  |split g s = cataNat j|
   %
-  \just\equiv{Pointfree}
-      |lcbr(
-        s. (const 0) = const 1
-          )(
-        s. succ = (+1).s
-          )|
+    \just\equiv{recorrendo aos resultados de usar Fokkinga, lei Banana-split, Absorção-x}
+    |split (cataNat i) (cataNat j) = cataNat(split ((split (either (const 1) mul) (either (succ.k) (succ.p2))).F p1)
+                                                     ((split (either (const 1) mul) (either (const 1) (succ.p2))).F p2)|
   %
-  \just\equiv{ Eq-+, Fusão-+, Absorção-+ e Cancelamento-x}
+  \just\equiv{Lei da troca -- 2 vezes}
+  |cataNat(split (either (split (const 1) (succ.k)) (split mul succ.p2)).F p1
+                 (either (split (const 1) (const 1)) (split mul succ.p2)).F p2)|
+  %
+  \just\equiv{F f = (id + f), Absorção-+, Fusão-x}
+  |cataNat(split (either (split (const 1) (succ.k)) (split (mul.p1) (succ.p2.p1)))
+                 (either (split (const 1) (const 1)) (split (mul.p2) (succ.p2.p2))))|
+  %
+  \just\equiv{Lei da Troca}
+  |cataNat (either (split (split (const 1) (succ.k)) (split (const 1) (const 1)))
+                   (split (split (mul.p1) (succ.p2.p1)) (split (mul.p2) (succ.p2.p2))))|
 
-  |s.inN =  (either (const 1) ((+1).p2)).(id + split g s)|
-  \qed
-  \end{eqnarray*}
-  \begin{eqnarray*}
-  \start
-    Juntando as duas funções para usar "Fokkinga":
-      |lcbr(
-        g.inN = (either (const 1) mul).(id + split g s)
-            )(
-        s.inN =  (either (const 1) ((+1).p2)).(id + split g s)
-            )|
-    %
-      \just\equiv{Fokkinga}
-    %
-    |split s g  = cataNat (split (either (const 1) mul) (either (const 1) ((+1).p2)))|
-    \qed
-    \end{eqnarray*}
+  %
+  \just\equiv{|for b i = cataNat(either (const i) b)|}
+  |lcbr(
+    base k = split (split (const 1) (succ.k)) (split (const 1) (const 1))
+        )(
+    loop = split (split (mul.p1) (succ.p2.p1)) (split (mul.p2) (succ.p2.p2))
+        )|
 
-    \begin{eqnarray*}
-    \start
-    Seja |split (f k) (l k) = cataNat i|
-      e  |split g s = cataNat j|
-    %
-      \just\equiv{recorrendo aos resultados de usar Fokkinga, lei Banana-split, Absorção-x}
-      |split (cataNat i) (cataNat j) = cataNat(split ((split (either (const 1) mul) (either (succ.k) succ.p2).F p1)
-                                                     ((split (either (const 1) mul) (either (const 1) succ.p2).F p2) |
-    %
-    \just\equiv{Lei da troca -- 2 vezes}
-    |cataNat(split (either (split (const 1) (succ.k)) (split mul succ.p2)).F p1
-                   (either (split (const 1) (const 1)) (split mul succ.p2)).F p2)|
-    %
-    \just\equiv{F f = (id + f), Absorção-+, Fusão-x}
-    |cataNat(split (either (split (const 1) (succ.k)) (split (mul.p1) (succ.p2.p1)))
-                   (either (split (const 1) (const 1)) (split (mul.p2) (succ.p2.p2))))|
-    %
-    \just\equiv{Lei da Troca}
-    |cataNat (either (split (split (const 1) (succ.k)) (split (const 1) (const 1)))
-                     (split (split (mul.p1) (succ.p2.p1)) (split (mul.p2) (succ.p2.p2))))|
-
-   \qed
-   \end{eqnarray*}
+ \qed
+ \end{eqnarray*}
 
 
 \subsection*{Problema 4}
