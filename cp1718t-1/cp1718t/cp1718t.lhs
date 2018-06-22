@@ -1236,43 +1236,19 @@ generateSquare (n, f) = if (0>=n) then i1 f else i2 ( f , ((predNat n, fator f),
 
 generatePTree = anaFTree (generateSquare) . split id (const 1.0)
 
-<<<<<<< HEAD
-=======
------((Angulo, TamanhoDoPrimeiro quadrado), (coordenadas, arvore))
-type Fractal = ((Float, Float), ((Float, Float), PTree))
-type FractalTree = FTree Fractal Fractal
->>>>>>> 4b1906fe965dd050c478c4861476a50dc3057ab8
 
 type Vect = (Float,Float)
 
-<<<<<<< HEAD
 poligono = Polygon [(0.0,0.0),(-100.0,0.0),(-100.0,100.0),(0.0,100.0)]
-=======
-nextFractais :: Fractal -> (Fractal, Fractal)
-nextFractais ((ang ,tam),((x,y), Unit a)) = undefined --nunca acontece
-nextFractais ((ang ,tam),((x,y), Comp fator b c)) =(((angEsq, tam), ((x, y + (abs ladoCos) ), b)), ((angDir, tam),((x - ladoCos + ladoSin ,y + (abs ladoCos)), c)))
-           where angEsq = ang - 45
-                 angDir = ang + 45
-                 lado = fator * tam
-                 ladoCos = lado * cos ang
-                 ladoSin = lado * sin ang
->>>>>>> 4b1906fe965dd050c478c4861476a50dc3057ab8
 
 transformPoligono :: Vect -> Float -> Float -> Picture
 transformPoligono (x,y) ang escala= translate x y$rotate ang$Graphics.Gloss.scale escala escala$poligono
 
 type Temp = ((Vect,Float),(FTree Float Float))
 
-<<<<<<< HEAD
 subractPair (x1,y1) (x2,y2) = (x2-x1,y2-y1) 
 addPair (x1,y1) (x2,y2) = (x2+x1,y2+y1) 
 middlepoint (x1,y1) (x2,y2) = ((x2+x1)/2,(y2+y1)/2)
-=======
-fractToPic :: Fractal -> [Picture]
-fractToPic ((ang,tam), ((vx,vy), tree)) = [Translate vx vy (Scale toScale toScale (Rotate ang (Polygon ((0, 0): (0 - tam, vy): (0 - tam, 
-  0 + tam): (0, 0 +  tam):[]))))]
-     where toScale = either id p1 (outFTree tree)
->>>>>>> 4b1906fe965dd050c478c4861476a50dc3057ab8
 
 resizeVect i (x,y) = (i*x,i*y)
 
@@ -1301,11 +1277,7 @@ drawPTree = joinPics.(anaFTree nextCall).setup
     where setup x = (((0,0),0),x)
 
 main :: IO()
-<<<<<<< HEAD
 main = animatePTree 6
-=======
-main = animatePTree 1
->>>>>>> 4b1906fe965dd050c478c4861476a50dc3057ab8
 
 \end{code}
 
