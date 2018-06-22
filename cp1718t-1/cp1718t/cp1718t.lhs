@@ -1236,37 +1236,48 @@ generateSquare (n, f) = if (0>=n) then i1 f else i2 ( f , ((predNat n, fator f),
 
 generatePTree = anaFTree (generateSquare) . split id (const 1.0)
 
------((Angulo, TamanhoDoPrimeiro quadrado), (coordenadas, arvore))
-type Fractal = ((Float, Float), (Point, PTree))
-type FractalTree = FTree Fractal Fractal
 
-toFractal :: (Fractal -> Either Fractal (Fractal, (Fractal, Fractal)))
-toFractal ((ang, tam), ((x,y), (Comp a b c))) = i2 (((ang,tam), ((x,y), Unit a)), nextFractais ((ang, tam), ((x,y), (Comp a b c))))
-toFractal ((ang, tam), ((x,y), (Unit a))) = i1 ((ang, tam), ((x,y), Unit a))
+type Vect = (Float,Float)
 
-nextFractais :: Fractal -> (Fractal, Fractal)
-nextFractais ((ang ,tam),((x,y), Unit a)) = undefined --nunca acontece
-nextFractais ((ang ,tam),((x,y), Comp fator b c)) =(((angEsq, tam), ((x + ladoSin , y + (abs ladoSin) + (abs ladoCos) ), b)), ((angDir, tam),((x + ladoCos + ladoSin ,y + (abs ladoCos)), c)))
-           where angEsq = ang - pi/4
-                 angDir = ang + 3*pi/4
-                 lado = fator * tam
-                 ladoCos = lado * cos ang
-                 ladoSin = lado * sin ang
+poligono = Polygon [(0.0,0.0),(-100.0,0.0),(-100.0,100.0),(0.0,100.0)]
 
+transformPoligono :: Vect -> Float -> Float -> Picture
+transformPoligono (x,y) ang escala= translate x y$rotate ang$Graphics.Gloss.scale escala escala$poligono
 
-toPictures :: Either Fractal (Fractal, ([Picture], [Picture])) -> [Picture]
-toPictures = either (fractToPic) (conc.(fractToPic >< conc))
+type Temp = ((Vect,Float),(FTree Float Float))
 
-fractToPic :: Fractal -> [Picture]
-fractToPic ((ang,tam), ((x,y), tree)) = [Rotate ang (Polygon ((x, y): (x - lado, y): (x - lado, y + lado): (x - lado, y +  lado):[]))]
-     where lado = tam * (either id p1 (outFTree tree))
+subractPair (x1,y1) (x2,y2) = (x2-x1,y2-y1) 
+addPair (x1,y1) (x2,y2) = (x2+x1,y2+y1) 
+middlepoint (x1,y1) (x2,y2) = ((x2+x1)/2,(y2+y1)/2)
 
+resizeVect i (x,y) = (i*x,i*y)
 
-drawPTree = cataFTree toPictures . anaFTree toFractal . initFractal
-        where initFractal = split (split (const 0.0) (const 100)) id .(split (const (0.0, 0.0)) id)
+nextVects (Polygon [x,y,z,d]) = (vectAddicional,vecVert)
+    where vecVert = subractPair x d
+          vectHorizontal = subractPair x (middlepoint x y)
+          vectAddicional = addPair (addPair vectHorizontal vecVert) littleVec
+          littleVec = resizeVect (cos (pi/4) * sqrt 2 /2) vecVert
+
+rotateVector angulo (x,y) = (nx,ny)
+    where ang = angulo * pi / 180
+          nx = (x * (cos ang)) + (y * (sin ang))
+          ny = ((-x) * (sin ang)) + (y * (cos ang))
+
+nextCall :: Temp -> Either Picture (Picture,(Temp,Temp))
+nextCall ((vecAcum,angAcum),Unit a) = i1$ transformPoligono vecAcum angAcum a
+nextCall ((vecAcum,angAcum),Comp a b c) = i2 (transformPoligono vecAcum angAcum a,(left,right))
+        where left = ((addPair vecAcum vleft ,angAcum-45),b)
+              right = ((addPair vecAcum vright ,angAcum+45),c)
+              (vleft,vright) = (rotateVector angAcum.resizeVect a><rotateVector angAcum.resizeVect a)$nextVects poligono
+
+joinPics = cataFTree (either singl aux)
+    where aux (a,(b,c)) = a:(zipWith (\x b -> pictures [a,x,b]) b c)
+
+drawPTree = joinPics.(anaFTree nextCall).setup
+    where setup x = (((0,0),0),x)
 
 main :: IO()
-main = animatePTree 2
+main = animatePTree 6
 
 \end{code}
 
