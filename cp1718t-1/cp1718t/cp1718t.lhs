@@ -1237,7 +1237,7 @@ generateSquare (n, f) = if (0>=n) then i1 f else i2 ( f , ((predNat n, fator f),
 generatePTree = anaFTree (generateSquare) . split id (const 1.0)
 
 -----((Angulo, TamanhoDoPrimeiro quadrado), (coordenadas, arvore))
-type Fractal = ((Float, Float), (Point, PTree))
+type Fractal = ((Float, Float), ((Float, Float), PTree))
 type FractalTree = FTree Fractal Fractal
 
 toFractal :: (Fractal -> Either Fractal (Fractal, (Fractal, Fractal)))
@@ -1246,9 +1246,9 @@ toFractal ((ang, tam), ((x,y), (Unit a))) = i1 ((ang, tam), ((x,y), Unit a))
 
 nextFractais :: Fractal -> (Fractal, Fractal)
 nextFractais ((ang ,tam),((x,y), Unit a)) = undefined --nunca acontece
-nextFractais ((ang ,tam),((x,y), Comp fator b c)) =(((angEsq, tam), ((x + ladoSin , y + (abs ladoSin) + (abs ladoCos) ), b)), ((angDir, tam),((x + ladoCos + ladoSin ,y + (abs ladoCos)), c)))
-           where angEsq = ang - pi/4
-                 angDir = ang + 3*pi/4
+nextFractais ((ang ,tam),((x,y), Comp fator b c)) =(((angEsq, tam), ((x, y + (abs ladoCos) ), b)), ((angDir, tam),((x - ladoCos + ladoSin ,y + (abs ladoCos)), c)))
+           where angEsq = ang - 45
+                 angDir = ang + 45
                  lado = fator * tam
                  ladoCos = lado * cos ang
                  ladoSin = lado * sin ang
@@ -1258,15 +1258,15 @@ toPictures :: Either Fractal (Fractal, ([Picture], [Picture])) -> [Picture]
 toPictures = either (fractToPic) (conc.(fractToPic >< conc))
 
 fractToPic :: Fractal -> [Picture]
-fractToPic ((ang,tam), ((x,y), tree)) = [Rotate ang (Polygon ((x, y): (x - lado, y): (x - lado, y + lado): (x - lado, y +  lado):[]))]
-     where lado = tam * (either id p1 (outFTree tree))
+fractToPic ((ang,tam), ((vx,vy), tree)) = [Tranlate vx vy (Scale toScale toScale (Rotate ang (Polygon ((x, y): (x - tam, y): (x - tam, y + tam): (x, y +  tam):[]))))]
+     where toScale = either id p1 (outFTree tree)
 
 
 drawPTree = cataFTree toPictures . anaFTree toFractal . initFractal
         where initFractal = split (split (const 0.0) (const 100)) id .(split (const (0.0, 0.0)) id)
 
 main :: IO()
-main = animatePTree 2
+main = animatePTree 1
 
 \end{code}
 
