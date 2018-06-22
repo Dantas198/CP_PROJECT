@@ -1192,10 +1192,6 @@ intToFloat :: Int -> Float
 intToFloat n = fromInteger (toInteger n)
 
 inFTree = either Unit (branchBuild)
-<<<<<<< HEAD
-
-=======
->>>>>>> 72011b6150c87ba0ddb74fdd1f29e8df30a81b04
 outFTree (Unit u) = i1 u
 outFTree (Comp a b c) = i2 (a,(b,c))
 baseFTree f g h =  g -|- (f >< ( h >< h))
