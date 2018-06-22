@@ -1209,35 +1209,39 @@ generateSquare (n, f) = if (0>=n) then i1 f else i2 ( f , ((predNat n, fator f),
 
 generatePTree = anaFTree (generateSquare) . split id (const 1.0)
 
------((QuadradoInclidado, TamanhoDoPrimeiro quadrado), (coordenadas, arvore))
-type Fractal = ((Bool, Float), (Point, PTree))
+-----((Angulo, TamanhoDoPrimeiro quadrado), (coordenadas, arvore))
+type Fractal = ((Float, Float), (Point, PTree))
 type FractalTree = FTree Fractal Fractal
 
 toFractal :: (Fractal -> Either Fractal (Fractal, (Fractal, Fractal)))
-toFractal ((bool, tam), ((x,y), (Comp a b c))) = i2 (((bool,tam), ((x,y), Unit a)), nextFractais ((bool, tam), ((x,y), (Comp a b c))))
-toFractal ((bool, tam), ((x,y), (Unit a))) = i1 ((bool, tam), ((x,y), Unit a))
+toFractal ((ang, tam), ((x,y), (Comp a b c))) = i2 (((ang,tam), ((x,y), Unit a)), nextFractais ((ang, tam), ((x,y), (Comp a b c))))
+toFractal ((ang, tam), ((x,y), (Unit a))) = i1 ((ang, tam), ((x,y), Unit a))
 
 nextFractais :: Fractal -> (Fractal, Fractal)
-nextFractais ((bool ,tam),((x,y), Unit a)) = undefined --nunca acontece
-nextFractais ((bool ,tam),((x,y), Comp a b c)) = if bool then (((not bool, tam), ((x + raio + lado* sqrt(2)/2 ,y + raio), b)), ((not bool, tam),((x + raio ,y + 2*raio), c))) else  (((not bool, tam), ((x,y + lado), b)), ((not bool, tam),((x - lado,y + lado), c)))
-           where lado = a * tam
-                 raio = sqrt(2*lado*lado)/2.0
+nextFractais ((ang ,tam),((x,y), Unit a)) = undefined --nunca acontece
+nextFractais ((ang ,tam),((x,y), Comp fator b c)) =(((angEsq, tam), ((x + ladoSin , y + (abs ladoSin) + (abs ladoCos) ), b)), ((angDir, tam),((x + ladoCos + ladoSin ,y + (abs ladoCos)), c)))
+           where angEsq = ang - pi/4
+                 angDir = ang + 3*pi/4
+                 lado = fator * tam
+                 ladoCos = lado * cos ang
+                 ladoSin = lado * sin ang
+
 
 toPictures :: Either Fractal (Fractal, ([Picture], [Picture])) -> [Picture]
 toPictures = either (fractToPic) (conc.(fractToPic >< conc))
 
 fractToPic :: Fractal -> [Picture]
-fractToPic ((bool,tam), ((x,y), tree)) = p2p (retNormal ((bool,tam), ((x,y), tree)), retInclinado ((bool,tam), ((x,y), tree))) (bool)
-     where retNormal ((bool,tam), ((x,y), tree)) =  [Polygon ((x, y): (x- lado, y): (x- lado, y+ lado): (x, y + lado):[])]
-           retInclinado ((bool,tam), ((x,y), tree)) = [Polygon ((x, y): (x- raio, y + raio): (x, y + 2* raio): (x + raio, y + raio):[])]
-           lado = tam * (either id p1 (outFTree tree))
-           raio = sqrt(2*lado*lado)/2.0
+fractToPic ((ang,tam), ((x,y), tree)) = [Polygon ((x, y): (x + ladoCos, y + (abs ladoSin)): (x + (ladoCos + ladoSin), y + ( (abs ladoCos) + (abs ladoSin))): (x + ladoSin, y +  (abs ladoCos) ):[])]
+     where lado = tam * (either id p1 (outFTree tree))
+           ladoCos = lado * cos ang
+           ladoSin = lado * sin ang
+
 
 drawPTree = cataFTree toPictures . anaFTree toFractal . initFractal
-        where initFractal = split (split false (const 100)) id .(split (const (0.0, -350.0)) id)
+        where initFractal = split (split (const 0.0) (const 100)) id .(split (const (0.0, 0.0)) id)
 
 main :: IO()
-main = animatePTree 3
+main = animatePTree 2
 
 \end{code}
 
