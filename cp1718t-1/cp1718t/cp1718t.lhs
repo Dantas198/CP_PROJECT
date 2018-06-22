@@ -984,11 +984,11 @@ hyloBlockchain h g = cataBlockchain h . anaBlockchain g
 
 allTransactions =  cataBlockchain (either (g) (conc.((g)><id)))
     where g = p2.p2
-ledger = map d.groupBy(e).sort.cataBlockchain (either (g) (conc.((g)><id)))
-    where d (x) = ((p1.head) x,(sum ([p2(y) | y <- x])))
-          e x y = (p1 x) == (p1 y)
-          g = concat.(map (conc.w)).p2.p2
-          w = split (singl.(id><p1)) (singl.(id><negate).swap.p2)
+ledger = map pairList2Pair.groupBy(groupByFst).sort.cataBlockchain (either (block2LedgeList) (conc.((block2LedgeList)><id)))
+    where pairList2Pair (x) = ((p1.head) x,(sum ([p2(y) | y <- x])))
+          groupByFst x y = (p1 x) == (p1 y)
+          block2LedgeList = concat.(map (conc.ledgeSinglePair)).p2.p2
+          ledgeSinglePair = split (singl.(id><p1)) (singl.(id><negate).swap.p2)
 isValidMagicNr = (uncurry (==)).(split (length.n) (length.nub.n))
     where n = cataBlockchain (either (singl.p1) (cons.(p1><id)))
 \end{code}
@@ -1021,7 +1021,8 @@ hyloQTree h g=  cataQTree h . anaQTree g
 instance Functor QTree where
     fmap f = cataQTree (inQTree . baseQTree f id)
 
-rotateQTree = cataQTree (either cellBuild (inQTree.i2.(splitq4(pQ3,pQ1,pQ4,pQ2))))
+rotateQTree = cataQTree (either (cellBuild.(id><swap)) (inQTree.i2.z))
+    where z (q1,(q2,(q3,q4))) = (q3,(q1,(q4,q2)))
 scaleQTree i x = cataQTree (either (cellBuild.(\(a,(b,c)) -> (a,(b*i,c*i)))) (inQTree.i2)) x
 invertQTree = fmap (f)
     where f (PixelRGBA8 r g b a) = PixelRGBA8 (255-r) (255-g) (255-b) (a)
@@ -1191,6 +1192,10 @@ intToFloat :: Int -> Float
 intToFloat n = fromInteger (toInteger n)
 
 inFTree = either Unit (branchBuild)
+<<<<<<< HEAD
+
+=======
+>>>>>>> 72011b6150c87ba0ddb74fdd1f29e8df30a81b04
 outFTree (Unit u) = i1 u
 outFTree (Comp a b c) = i2 (a,(b,c))
 baseFTree f g h =  g -|- (f >< ( h >< h))
