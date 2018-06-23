@@ -1135,10 +1135,13 @@ Foi utilizado um catamorfismo para transformar um Block num Cell utilizando a "c
 
 \begin{code}
 
-compAux:: Int -> (Int,QTree a) -> Either (a,(Int,Int)) (((Int,QTree a),((Int,QTree a),((Int,QTree a),(Int,QTree a)))))
+type QuadPair a = ((Int,QTree a),((Int,QTree a),((Int,QTree a),(Int,QTree a))))
+
+compAux:: Int -> (Int,QTree a) -> Either (a,(Int,Int)) (QuadPair a)
 compAux i (_,Cell x b c) = i1 (x,(b,c))
-compAux i (r,Block a b c d) = if (r > i) then i2 ((r-1,a),((r-1,b),((r-1,c),(r-1,d)))) else i1$(a1,(b1,c1))
+compAux i (r,Block a b c d) = if (r > i) then i2 decremento else i1$(a1,(b1,c1))
     where (Cell a1 b1 c1) = fullCompression (Block a b c d)
+          decremento = ((r-1,a),((r-1,b),((r-1,c),(r-1,d))))
 
 fullCompression = cataQTree (either cellBuild (compressAux.inQTree.i2))
 
