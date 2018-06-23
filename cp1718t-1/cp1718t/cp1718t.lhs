@@ -1253,7 +1253,6 @@ s
 
 |s.inN =  (either (const 1) (succ.p2)).(id + split g s)|
 \qed
-\end{eqnarray*}
 \begin{eqnarray*}
 \start
   Juntando as duas funções para usar "Fokkinga":
