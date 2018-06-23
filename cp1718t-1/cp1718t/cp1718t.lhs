@@ -107,11 +107,11 @@
 \begin{tabular}{ll}
 \textbf{Grupo} nr. & 49 (preencher)
 \\\hline
-a11111 & Nome1 (preencher)
+a81736 & Marco Dantas
 \\
-a22222 & Nome2 (preencher)
+a82467 & José Fernandes
 \\
-a81644 & César Borges (preencher)
+a81644 & César Borges
 \end{tabular}
 \end{center}
 
@@ -990,13 +990,13 @@ allTransactions =  cataBlockchain (either (g) (conc.((g)><id)))
     where g = p2.p2
 \end{code}
 
-Utilizamos um catamorfismo para aplicar recursividade à blockChain, quando temos um Bc aplicamos g ao Block:
+\par Utilizamos um catamorfismo para aplicar recursividade à blockChain, quando temos um Bc aplicamos g ao Block:
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
 |A ><(C >< D)| \ar[r]^g &D\\}
 \end{eqnarray*}
 
-Se tivermos um Bcs:
+\par Se tivermos um Bcs:
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
 |(Block >< Transactions)| \ar[r]^{|conc.(g><id)|} &Transactions\\}
@@ -1012,7 +1012,7 @@ ledger = joinledges.cataBlockchain (either (block2LedgeList) (conc.((block2Ledge
           ledgeSinglePair = split (singl.(id><p1)) (singl.(id><negate).swap.p2)
 
 \end{code}
-Utilizando um catamorfismo obtemos uma lista de pares de entidades e o valor da transação, as funções
+\par Utilizando um catamorfismo obtemos uma lista de pares de entidades e o valor da transação, as funções
 para obter este resultado encontram-se a seguir:
 block2LedgeList:
 
@@ -1032,7 +1032,7 @@ ledgeSinglePair:
 |[Entity><Value]|\\}}
 \end{eqnarray*}
 
-Depois de termos [(Entity,Value)] vamos chamar a função "joinledges" que essencialmente
+\par Depois de termos [(Entity,Value)] vamos chamar a função "joinledges" que essencialmente
 ordena todos os pares da lista, para ficarem os pares com a mesma "Entity" seguidos na lista. Depois
 agrupamos todos esses pares numa lista, sendo o critério a "Entity". Por fim fazemos um map onde
 por cada lista contida da [[(Entity,Value)]] formamos um par através da "pairList2Pair" esse par
@@ -1045,7 +1045,7 @@ isValidMagicNr = (uncurry (==)).(split (length.n) (length.nub.n))
     where n = cataBlockchain (either (singl.p1) (cons.(p1><id)))
 \end{code}
 
-Foi utilizado um catamorfismo para criar uma lista com todos os "MagicNr", depois foi comparado
+\par Foi utilizado um catamorfismo para criar uma lista com todos os "MagicNr", depois foi comparado
 o comprimento dessa lista com o da mesma, mas sem repetidos, utilizando a função "nub". Caso seja igual apenas
 existem "MagicNr" únicos.
 
@@ -1103,7 +1103,7 @@ Troca das células de um bloco para obtermos a rotação
 scaleQTree i x = cataQTree (either (cellBuild.(\(a,(b,c)) -> (a,(b*i,c*i)))) (inQTree.i2)) x
 \end{code}
 
-Através de um catamorfismo vamos em todas as células da árvore multiplicar os seus inteiros por um fator.
+\par Através de um catamorfismo vamos em todas as células da árvore multiplicar os seus inteiros por um fator.
 
 
 
@@ -1113,7 +1113,7 @@ invertQTree = fmap (f)
     where f (PixelRGBA8 r g b a) = PixelRGBA8 (255-r) (255-g) (255-b) (a)
 \end{code}
 
-Utilizando um fmap modificamos o pixel de cada célula
+\par Utilizando um fmap modificamos o pixel de cada célula
 
 
 
@@ -1125,7 +1125,10 @@ compressAux (Block (Cell a b1 c1) (Cell _ b2 c2) (Cell _ b3 c3) (Cell _ b4 c4)) 
 compressAux x = x
 \end{code}
 
-Em principio a segunda linha de código nunca chega a ser executada e apenas está aí para o Haskell não dar erro.
+\par Em principio a segunda linha de código nunca chega a ser executada e apenas está aí para o Haskell não dar erro.
+
+\par No compressQTree, o anaQTree usa um par com o tamanho da árvore e ela própria, deste modo, o elemento do par com o tamanho é decrementado e a árvore é inalterada até que, o valor anterior seja menor ou igual ao do recebido pelo compressQTree, neste caso o Block é convertido para uma Cell, ou não existe mais sub-árvores.
+Foi utilizado um catamorfismo para transformar um Block num Cell.
 
 \begin{code}
 
@@ -1136,13 +1139,11 @@ compAux i (r,Block a b c d) = if (r > i) then i2 ((r-1,a),((r-1,b),((r-1,c),(r-1
 
 fullCompression = cataQTree (either cellBuild (compressAux.inQTree.i2))
 
-compressQTree i x = anaQTree (compAux i) (r,x)
-        where        
-                r = depthQTree x
+compressQTree i x = anaQTree (compAux i) (depthQTree x ,x)
 
 \end{code}
 
-O catamorfismo utilizado para esta solução devolve um par (Int, QTree a), sendo o primeiro elemento a altura total
+\par O catamorfismo utilizado para esta solução devolve um par (Int, QTree a), sendo o primeiro elemento a altura total
 e o segundo a árvore.Chamamos altura visto que o catamorfismo começa por baixo.
 Com a função auxiliar f vamos etiquetando cada subÁrvore com a sua altura, (Altura, Árvore).
 
@@ -1166,7 +1167,7 @@ outlineQTree f = cataQTree (either (mat) (joinmats))
           joinmats (a,(b,(c,d))) = (a <|> b) <-> (c <|> d)
 \end{code}
 
-O catamorfismo permite construir a matriz sempre temos uma célula, neste caso verificamos se estámos nas bordas
+\par O catamorfismo permite construir a matriz sempre temos uma célula, neste caso verificamos se estámos nas bordas
 da matriz e aí chamamos a função "f", caso contrário será Falso. Quando temos um Block juntamos as suas matrizes.
 
 \subsection*{Problema 3}
@@ -1219,7 +1220,7 @@ f k
   \begin{eqnarray*}
   \start
 
-  Juntando as duas funções para usar "Fokkinga":
+ \par Juntando as duas funções para usar "Fokkinga":
   %
       |lcbr(
         f k.inN = either (const 1) (mul) .(id + split(f k) (l k))
@@ -1331,7 +1332,7 @@ instance Bifunctor FTree where
 
 \end{code}
 
-Para resolver o problema de gerar uma árvore de Pitágoras decidimos que a raiz desa seria sempre 1, e que, as sucessivas raizes das subárvores seriam $\sqrt{2} / 2$ maiores que a anterior, desta forma garantimos uma relação (percentagem) direta de um nodo à raiz da árvore. Esta caracteristica foi utilizada no segundo problema dasta questão para redimensionar os quadrados.
+\par Para resolver o problema de gerar uma árvore de Pitágoras decidimos que a raiz desa seria sempre 1, e que, as sucessivas raizes das subárvores seriam $\sqrt{2} / 2$ maiores que a anterior, desta forma garantimos uma relação (percentagem) direta de um nodo à raiz da árvore. Esta caracteristica foi utilizada no segundo problema dasta questão para redimensionar os quadrados.
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
     |1 + Nat0 >< Float|
@@ -1384,7 +1385,7 @@ nextVects (Polygon [x,y,z,d]) = (vectAddicional,vecVert)
           vectAddicional = addPair (addPair vectHorizontal vecVert) littleVec
           littleVec = resizeVect (cos (pi/4) * sqrt 2 /2) vecVert
 \end{code}
-Baseia-se na ordem que escolhemos para os pontos dos poligonos.
+\par Baseia-se na ordem que escolhemos para os pontos dos poligonos.
 \par Utilizamos a ordem inferior direito, inferior esquerdo, superior esquerdo, superior direito.
 \par A transformação a aplicar para posicionar o quadrado direito seguinte é apenas um vetor com a mesma dimensão direção e sentido que o lado vertical (assumindo que este é o primeiro quadrado).
 \par A transformação a aplicar ao quadrado direito é o resultado de somar à transformação aplicada ao quadrado direito uma transformação com a mesma dimensão, direção e sentido da base do quadrado direito.
