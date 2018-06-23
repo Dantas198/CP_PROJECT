@@ -105,13 +105,13 @@
 
 \begin{center}\large
 \begin{tabular}{ll}
-\textbf{Grupo} nr. & 99 (preencher)
+\textbf{Grupo} nr. & 49 (preencher)
 \\\hline
 a11111 & Nome1 (preencher)
 \\
 a22222 & Nome2 (preencher)
 \\
-a33333 & Nome3 (preencher)
+a81644 & César Borges (preencher)
 \end{tabular}
 \end{center}
 
@@ -1214,10 +1214,6 @@ f k
 
 \begin{code}
 branchBuild (a,(b,c)) = Comp a b c
-
-intToFloat :: Int -> Float
-intToFloat n = fromInteger (toInteger n)
-
 inFTree = either Unit (branchBuild)
 outFTree (Unit u) = i1 u
 outFTree (Comp a b c) = i2 (a,(b,c))
@@ -1230,57 +1226,76 @@ hyloFTree h g = cataFTree h . anaFTree g
 instance Bifunctor FTree where
      bimap f g = cataFTree ( inFTree . baseFTree f g id )
 
-rotateVector :: (Float, Float) -> Float -> (Float, Float)
-rotateVector (x,y) ang = (nx, ny)
-    where nx = ( x * (cos ang)) + (y * (sin ang))
-          ny = ((-x) * (sin ang)) + (y * (cos ang))
+\end{code}
 
-resizeVector :: Float -> (Float, Float)  -> (Float, Float)
-resizeVector i (x,y) = (i*x, i*y)
+Para resolver o problema de gerar uma árvore de Pitágoras decidimos que a raiz desa seria sempre 1, e que, as sucessivas raizes das subárvores seriam $\sqrt{2} / 2$ maiores que a anterior, desta forma garantimos uma relação (percentagem) direta de um nodo à raiz da árvore. Esta caracteristica foi utilizada no segundo problema dasta questão para redimensionar os quadrados.
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |1 + Nat0 >< Float|
+           \ar[d]_-{|anaFtree generateSquare|}
+&
+    |Nat0 >< Float|
+           \ar[d]^{|id + (anaFtree generateSquare)|}
+           \ar[l]_-{|outNat >< id|}
+\\
+     |1 + PTree|
+&
+     |PTree|
+           \ar[l]^-{|generateSquare|}
+}
+\end{eqnarray*}
 
-addVetores :: (Float, Float) -> (Float, Float) -> (Float, Float)
-addVetores (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)
-
+\begin{code}
 generateSquare :: (Int, Square) -> Either Square (Square, ((Int,Square), (Int,Square)))
 generateSquare (n, f) = if (0>=n) then i1 f else i2 ( f , ((predNat n, fator f), (predNat n, fator f)))
       where fator f = f * (sqrt(2)/2)
 
 generatePTree = anaFTree (generateSquare) . split id (const 1.0)
 
------((Angulo, TamanhoDoPrimeiro quadrado), (coordenadas, arvore))
-type Fractal = ((Float, Float), ((Float, Float), PTree))
-type FractalTree = FTree Fractal Fractal
+\end{code}
 
-toFractal :: (Fractal -> Either Fractal (Fractal, (Fractal, Fractal)))
-toFractal ((ang, tam), ((x,y), (Comp a b c))) = i2 (((ang,tam), ((x,y), Unit a)), nextFractais ((ang, tam), ((x,y), (Comp a b c))))
-toFractal ((ang, tam), ((x,y), (Unit a))) = i1 ((ang, tam), ((x,y), Unit a))
+\begin{code}
+type Vect = (Float,Float)
 
-nextFractais :: Fractal -> (Fractal, Fractal)
-nextFractais ((ang ,tam),((x,y), Unit a)) = undefined --nunca acontece
-nextFractais ((ang ,tam),((x,y), Comp fator b c)) =(fractalEsq ((ang ,tam),((x,y), b)) fator , fractalDir((ang ,tam),((x,y), c)) fator)
-   where angEsq = ang + 45
-         angDir = ang - 45
-         lado = fator * tam
-         angInDegree ang = ang *(pi / 180)
-         fractalEsq ((ang ,tam),((x,y), b)) fator = ((angDir, tam),(addVetores (x,y) (resize fator ve)), c)
-         fractalDir ((ang ,tam),((x,y), c)) fator = ((angEsq, tam),(addVetores (x,y) (resize fator vd)), b)
-         (ve , vd ) = (rotateVector (-tam/2, tam +  sqrt((tam*tam)/4)) (angInDegree ang), rotateVector (0, tam) (angInDegree ang))
+poligono = Polygon [(0.0,0.0),(-100.0,0.0),(-100.0,100.0),(0.0,100.0)]
 
-toPictures :: Either Fractal (Fractal, ([Picture], [Picture])) -> [Picture]
-toPictures = either (fractToPic) (conc.(fractToPic >< conc))
+transformPoligono :: Vect -> Float -> Float -> Picture
+transformPoligono (x,y) ang escala= translate x y$rotate ang$Graphics.Gloss.scale escala escala$poligono
 
-fractToPic :: Fractal -> [Picture]
-fractToPic ((ang,tam), ((vx,vy), tree)) = [Translate vx vy (Scale toScale toScale (Rotate ang (Polygon ((0, 0): (0 - tam, 0): (0 - tam, 
-  0 + tam): (0, 0 +  tam):[]))))]
-     where toScale = either id p1 (outFTree tree)
+type Temp = ((Vect,Float),(FTree Float Float))
 
+subractPair (x1,y1) (x2,y2) = (x2-x1,y2-y1) 
+addPair (x1,y1) (x2,y2) = (x2+x1,y2+y1) 
+middlepoint (x1,y1) (x2,y2) = ((x2+x1)/2,(y2+y1)/2)
 
-drawPTree = cataFTree toPictures . anaFTree toFractal . initFractal
-        where initFractal = split (split (const 0.0) (const 100)) id .(split (const (0.0, 0.0)) id)
+resizeVect i (x,y) = (i*x,i*y)
+
+nextVects (Polygon [x,y,z,d]) = (vectAddicional,vecVert)
+    where vecVert = subractPair x d
+          vectHorizontal = subractPair x (middlepoint x y)
+          vectAddicional = addPair (addPair vectHorizontal vecVert) littleVec
+          littleVec = resizeVect (cos (pi/4) * sqrt 2 /2) vecVert
+
+rotateVector angulo (x,y) = (nx,ny)
+    where ang = angulo * pi / 180
+          nx = (x * (cos ang)) + (y * (sin ang))
+          ny = ((-x) * (sin ang)) + (y * (cos ang))
+
+nextCall :: Temp -> Either Picture (Picture,(Temp,Temp))
+nextCall ((vecAcum,angAcum),Unit a) = i1$ transformPoligono vecAcum angAcum a
+nextCall ((vecAcum,angAcum),Comp a b c) = i2 (transformPoligono vecAcum angAcum a,(left,right))
+        where left = ((addPair vecAcum vleft ,angAcum-45),b)
+              right = ((addPair vecAcum vright ,angAcum+45),c)
+              (vleft,vright) = (rotateVector angAcum.resizeVect a><rotateVector angAcum.resizeVect a)$nextVects poligono
+
+joinPics = cataFTree (either singl aux)
+    where aux (a,(b,c)) = a:(zipWith (\x b -> pictures [a,x,b]) b c)
+
+drawPTree = joinPics.(anaFTree nextCall).setup
+    where setup x = (((0,0),0),x)
 
 main :: IO()
-main = animatePTree 1
-
+main = animatePTree 6
 \end{code}
 
 \subsection*{Problema 5}
