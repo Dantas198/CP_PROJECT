@@ -1127,8 +1127,11 @@ compressAux x = x
 
 \par Em principio a segunda linha de código nunca chega a ser executada e apenas está aí para o Haskell não dar erro.
 
-\par No compressQTree, o anaQTree usa um par com o tamanho da árvore e ela própria, deste modo, o elemento do par com o tamanho é decrementado e a árvore é inalterada até que, o valor anterior seja menor ou igual ao do recebido pelo compressQTree, neste caso o Block é convertido para uma Cell, ou não existe mais sub-árvores.
-Foi utilizado um catamorfismo para transformar um Block num Cell.
+\par No compressQTree, o anaQTree usa um par com o tamanho da árvore e ela própria, deste modo, o elemento do par
+com o tamanho é decrementado e a árvore é inalterada até que,
+o valor do tamanho da árvore seja menor ou igual ao do recebido pelo compressQTree, neste caso o Block é
+convertido para uma Cell, ou quando não existe mais sub-árvores.
+Foi utilizado um catamorfismo para transformar um Block num Cell utilizando a "compressAux".
 
 \begin{code}
 
@@ -1142,22 +1145,6 @@ fullCompression = cataQTree (either cellBuild (compressAux.inQTree.i2))
 compressQTree i x = anaQTree (compAux i) (depthQTree x ,x)
 
 \end{code}
-
-\par O catamorfismo utilizado para esta solução devolve um par (Int, QTree a), sendo o primeiro elemento a altura total
-e o segundo a árvore.Chamamos altura visto que o catamorfismo começa por baixo.
-Com a função auxiliar f vamos etiquetando cada subÁrvore com a sua altura, (Altura, Árvore).
-
-\begin{eqnarray*}
-\xymatrix@@C=3cm{
-|(A><B)><(A><B)><(A><B)><(A><B)|  \ar[r]^{|q4xu(p1)|}  &|A><(A><(A><A))|\\}
-\end{eqnarray*}
-\begin{eqnarray*}
-\xymatrix@@C=4cm{
-|A><(A><(A><A))| \ar[r]^{|(+1).maximum.q4toList|} & |A|\\}
-\end{eqnarray*}
-
-Com a função auxiliar v verificamos se estamos a uma altura inferior ou igual à profundidade dada, em caso afimativo
-comprimimos utilizando a "compressAux" para cortar folhas.
 
 
 \subsubsection*{outlineQTree}
@@ -1370,11 +1357,11 @@ Por causa disto sempre que aplicamos uma transformação a um poligono temos gar
 \begin{code}
 transformPoligono :: Vect -> Float -> Float -> Picture
 transformPoligono (x,y) ang escala= translate x y$rotate ang$Graphics.Gloss.scale escala escala$poligono
---Aplica a translação, rotação e scale a um poligono 
+--Aplica a translação, rotação e scale a um poligono
 
 
-subractPair (x1,y1) (x2,y2) = (x2-x1,y2-y1) 
-addPair (x1,y1) (x2,y2) = (x2+x1,y2+y1) 
+subractPair (x1,y1) (x2,y2) = (x2-x1,y2-y1)
+addPair (x1,y1) (x2,y2) = (x2+x1,y2+y1)
 middlepoint (x1,y1) (x2,y2) = ((x2+x1)/2,(y2+y1)/2)
 
 resizeVect i (x,y) = (i*x,i*y)
@@ -1403,17 +1390,17 @@ nextCall ((vecAcum,angAcum),Comp a b c) = i2 (transformPoligono vecAcum angAcum 
               right = ((addPair vecAcum vright ,angAcum+45),c)
               (vleft,vright) = vectTransforms$nextVects poligono
               vectTransforms = rotateVector angAcum.resizeVect a><rotateVector angAcum.resizeVect a
-              
+
 \end{code}
-Função do anamorfismo. 
+Função do anamorfismo.
 \par
 O caso de paragem é o segundo elemento do par ser uma unit, neste caso transformamos o float no Poligono de base é lhe aplicado o scale ao fator do float e são aplicadas as transformações até agora acumuladas.
 \par No caso de o segundo elemento ser um Comp transformamos o float numa Poligono como no exemplo anterior, passamos para a chamada recursiva os ramos da arvore e as novas transformações a ser aplicadas aos floats consecutivos.
 \par Para a chamada da esquerda subtraimos 45 ao angulo acumulado, para a chamada da direita adicionamos 45.
-\par Os vetores adicionados aos vetores acumulados são rotações e redimensionamento dos vetores das transformações executadas no poligono base. 
+\par Os vetores adicionados aos vetores acumulados são rotações e redimensionamento dos vetores das transformações executadas no poligono base.
 \par
 Temos de aplicar a transformação ao vetor base aqui devido à maneira como as transformações são aplicadas às pictures.
-\begin{code}              
+\begin{code}
 joinPics = cataFTree (either singl aux)
     where aux (a,(b,c)) = a:(zipWith (\x b -> pictures [a,x,b]) b c)
 \end{code}
@@ -1421,9 +1408,9 @@ Catamorfismo que transforma a FTree Picture Picture em [Picture].
 \par Função aux junta duas listas de pictures juntando os elementos que se encontram em posições com o mesmo indice numa picture e adicionando a essa picture a picture que será adicionada à cabeça da lista.
 \begin{code}
 drawPTree = joinPics.(anaFTree nextCall).setup
-    where setup x = (((0,0),0),x) 
+    where setup x = (((0,0),0),x)
             --split (split (split (const 0) (const 0)) (const 0)) id
-        
+
 main :: IO()
 main = animatePTree 6
 \end{code}
@@ -1431,7 +1418,7 @@ main = animatePTree 6
 \subsection*{Problema 5}
 
 
-Cria-se uma Bag apenas com um 
+Cria-se uma Bag apenas com um
 \begin{eqnarray*}
 \xymatrix@@C=3cm{
 |a|  \ar[r]^{|singletonbag|}  &|Bag a|\\}
