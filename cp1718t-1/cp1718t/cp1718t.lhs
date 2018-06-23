@@ -1123,7 +1123,11 @@ Utilizando um fmap modificamos o pixel de cada célula
 compressAux :: QTree a -> QTree a
 compressAux (Block (Cell a b1 c1) (Cell _ b2 c2) (Cell _ b3 c3) (Cell _ b4 c4)) = (Cell a (b1+b2) (c1+c3))
 compressAux x = x
+\end{code}
 
+Em principio a segunda linha de código nunca chega a ser executada e apenas está aí para o Haskell não dar erro.
+
+\begin{code}
 compressQTree i x = p2 (cataQTree (either (split (const 0) (cellBuild)) (v.f)) x)
           where
                 f = split ((+1).maximum.q4toList.q4xu(p1)) (inQTree.i2.q4xu(p2))
@@ -1349,11 +1353,16 @@ generatePTree = anaFTree (generateSquare) . split id (const 1.0)
 type Vect = (Float,Float)
 
 poligono = Polygon [(0.0,0.0),(-100.0,0.0),(-100.0,100.0),(0.0,100.0)]
+\end{code}
+Poligono de base.
+Nos poligonos do gloss o primeiro ponto da lista conta como o ponto central.
+Por causa disto sempre que aplicamos uma transformação a um poligono temos garantia que o primeiro ponto se encontra sempre no centro.
 
+\begin{code}
 transformPoligono :: Vect -> Float -> Float -> Picture
 transformPoligono (x,y) ang escala= translate x y$rotate ang$Graphics.Gloss.scale escala escala$poligono
+--Aplica a translação, rotação e scale a um poligono 
 
-type Temp = ((Vect,Float),(FTree Float Float))
 
 subractPair (x1,y1) (x2,y2) = (x2-x1,y2-y1) 
 addPair (x1,y1) (x2,y2) = (x2+x1,y2+y1) 
@@ -1366,25 +1375,46 @@ nextVects (Polygon [x,y,z,d]) = (vectAddicional,vecVert)
           vectHorizontal = subractPair x (middlepoint x y)
           vectAddicional = addPair (addPair vectHorizontal vecVert) littleVec
           littleVec = resizeVect (cos (pi/4) * sqrt 2 /2) vecVert
-
+\end{code}
+Baseia-se na ordem que escolhemos para os pontos dos poligonos.
+\par Utilizamos a ordem inferior direito, inferior esquerdo, superior esquerdo, superior direito.
+\par A transformação a aplicar para posicionar o quadrado direito seguinte é apenas um vetor com a mesma dimensão direção e sentido que o lado vertical (assumindo que este é o primeiro quadrado).
+\par A transformação a aplicar ao quadrado direito é o resultado de somar à transformação aplicada ao quadrado direito uma transformação com a mesma dimensão, direção e sentido da base do quadrado direito.
+\begin{code}
 rotateVector angulo (x,y) = (nx,ny)
     where ang = angulo * pi / 180
           nx = (x * (cos ang)) + (y * (sin ang))
           ny = ((-x) * (sin ang)) + (y * (cos ang))
 
-nextCall :: Temp -> Either Picture (Picture,(Temp,Temp))
+type Transforms = ((Vect,Float),(FTree Float Float))
+nextCall :: Transforms -> Either Picture (Picture,(Transforms,Transforms))
 nextCall ((vecAcum,angAcum),Unit a) = i1$ transformPoligono vecAcum angAcum a
 nextCall ((vecAcum,angAcum),Comp a b c) = i2 (transformPoligono vecAcum angAcum a,(left,right))
         where left = ((addPair vecAcum vleft ,angAcum-45),b)
               right = ((addPair vecAcum vright ,angAcum+45),c)
-              (vleft,vright) = (rotateVector angAcum.resizeVect a><rotateVector angAcum.resizeVect a)$nextVects poligono
-
+              (vleft,vright) = vectTransforms$nextVects poligono
+              vectTransforms = rotateVector angAcum.resizeVect a><rotateVector angAcum.resizeVect a
+              
+\end{code}
+Função do anamorfismo. 
+\par
+O caso de paragem é o segundo elemento do par ser uma unit, neste caso transformamos o float no Poligono de base é lhe aplicado o scale ao fator do float e são aplicadas as transformações até agora acumuladas.
+\par No caso de o segundo elemento ser um Comp transformamos o float numa Poligono como no exemplo anterior, passamos para a chamada recursiva os ramos da arvore e as novas transformações a ser aplicadas aos floats consecutivos.
+\par Para a chamada da esquerda subtraimos 45 ao angulo acumulado, para a chamada da direita adicionamos 45.
+\par Os vetores adicionados aos vetores acumulados são rotações e redimensionamento dos vetores das transformações executadas no poligono base. 
+\par
+Temos de aplicar a transformação ao vetor base aqui devido à maneira como as transformações são aplicadas às pictures.
+\begin{code}              
 joinPics = cataFTree (either singl aux)
     where aux (a,(b,c)) = a:(zipWith (\x b -> pictures [a,x,b]) b c)
-
+\end{code}
+Catamorfismo que transforma a FTree Picture Picture em [Picture].
+\par Função aux junta duas listas de pictures juntando os elementos que se encontram em posições com o mesmo indice numa picture e adicionando a essa picture a picture que será adicionada à cabeça da lista.
+\begin{code}
 drawPTree = joinPics.(anaFTree nextCall).setup
-    where setup x = (((0,0),0),x)
-
+    where setup x = (((0,0),0),x) 
+            --split (split (split (const 0) (const 0)) (const 0)) id
+        
 main :: IO()
 main = animatePTree 6
 \end{code}
