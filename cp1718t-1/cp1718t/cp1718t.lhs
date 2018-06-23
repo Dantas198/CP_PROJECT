@@ -1421,9 +1421,27 @@ main = animatePTree 6
 
 \subsection*{Problema 5}
 
+
+Cria-se uma Bag apenas com um 
+\begin{eqnarray*}
+\xymatrix@@C=3cm{
+|a|  \ar[r]^{|singletonbag|}  &|Bag a|\\}
+\end{eqnarray*}
+
 \begin{code}
 singletonbag x = B [(x,1)]
+\end{code}
+
+Retira as bags interiores a uma bag comum, deixando os elementos nelas contidas
+\begin{eqnarray*}
+\xymatrix@@C=3cm{
+|(Bag (Bag a))|  \ar[r]^{|muB|}  &|Bag a|\\}
+\end{eqnarray*}
+\begin{code}
 muB (B d)= B (concat ([concat (replicate a x) | ((B x),a) <- d]))
+\end{code}
+
+\begin{code}
 dist (B x) = uniform (concat [replicate a d | (d,a) <- x])
 \end{code}
 
