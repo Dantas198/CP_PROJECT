@@ -1128,10 +1128,18 @@ compressAux x = x
 Em principio a segunda linha de código nunca chega a ser executada e apenas está aí para o Haskell não dar erro.
 
 \begin{code}
-compressQTree i x = p2 (cataQTree (either (split (const 0) (cellBuild)) (v.f)) x)
-          where
-                f = split ((+1).maximum.q4toList.q4xu(p1)) (inQTree.i2.q4xu(p2))
-                v x = if (p1 x) <= i then (id><compressAux) x else x
+
+compAux:: Int -> (Int,QTree a) -> Either (a,(Int,Int)) (((Int,QTree a),((Int,QTree a),((Int,QTree a),(Int,QTree a)))))
+compAux i (_,Cell x b c) = i1 (x,(b,c))
+compAux i (r,Block a b c d) = if (r > i) then i2 ((r-1,a),((r-1,b),((r-1,c),(r-1,d)))) else i1$(a1,(b1,c1))
+    where (Cell a1 b1 c1) = fullCompression (Block a b c d)
+
+fullCompression = cataQTree (either cellBuild (compressAux.inQTree.i2))
+
+compressQTree i x = anaQTree (compAux i) (r,x)
+        where        
+                r = depthQTree x
+
 \end{code}
 
 O catamorfismo utilizado para esta solução devolve um par (Int, QTree a), sendo o primeiro elemento a altura total
